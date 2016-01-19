@@ -34,6 +34,7 @@ public class GithubSettings {
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret";
   public static final String ENABLED = "sonar.auth.github.enabled";
   public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
+  // TODO fix category
   public static final String CATEGORY = "Github";
 
   private final Settings settings;
