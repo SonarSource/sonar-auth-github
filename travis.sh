@@ -2,10 +2,21 @@
 
 set -euo pipefail
 
+function installTravisTools {
+  mkdir ~/.local
+  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v21 | tar zx --strip-components 1 -C ~/.local
+  source ~/.local/bin/install
+}
+installTravisTools
+
 function strongEcho {
   echo ""
   echo "================ $1 ================="
 }
+
+# temporary build of SonarQube 5.4-SNAPSHOT. Will be removed when SNAPSHOT shared repository will be available
+# or when dependency on sonar-plugin-api will be RELEASE.
+build "SonarSource/sonarqube" "feature/jl/oauth_api"
 
 if [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
   strongEcho 'Build and analyze commit in master'
@@ -17,7 +28,6 @@ if [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; 
     -Dsonar.login=$SONAR_LOGIN \
     -Dsonar.password=$SONAR_PASSWORD \
     -B -e -V
-
 
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "$GITHUB_TOKEN" ]; then
   # For security reasons environment variables are not available on the pull requests
@@ -38,8 +48,6 @@ elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "$GITHUB_TOKEN" ]; then
     -Dsonar.login=$SONAR_LOGIN \
     -Dsonar.password=$SONAR_PASSWORD \
     -B -e -V
-
-
 
 else
   strongEcho 'Build, no analysis'
