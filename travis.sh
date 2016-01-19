@@ -25,8 +25,7 @@ if [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; 
     -Pcoverage-per-test \
     -Dmaven.test.redirectTestOutputToFile=false \
     -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.login=$SONAR_LOGIN \
-    -Dsonar.password=$SONAR_PASSWORD \
+    -Dsonar.login=$SONAR_TOKEN \
     -B -e -V
 
 elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "$GITHUB_TOKEN" ]; then
@@ -45,8 +44,7 @@ elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "$GITHUB_TOKEN" ]; then
     -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
     -Dsonar.github.oauth=$GITHUB_TOKEN \
     -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.login=$SONAR_LOGIN \
-    -Dsonar.password=$SONAR_PASSWORD \
+    -Dsonar.login=$SONAR_TOKEN \
     -B -e -V
 
 else
