@@ -19,17 +19,42 @@
  */
 package org.sonarsource.auth.github;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.sonar.api.SonarPlugin;
+import com.google.gson.Gson;
 
-public class AuthGithubPlugin extends SonarPlugin {
-  @Override
-  public List getExtensions() {
-    List extensions = new ArrayList();
-    extensions.add(GithubIdentityProvider.class);
-    extensions.add(GithubService.class);
-    extensions.addAll(GithubProperties.definitions());
-    return extensions;
+/**
+ * Lite representation of JSON response of GET https://api.github.com/user
+ */
+public class GsonUser {
+  private String login;
+  private String name;
+  private String email;
+
+  public String getLogin() {
+    return login;
+  }
+
+  public void setLogin(String login) {
+    this.login = login;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public static GsonUser parse(String json) {
+    Gson gson = new Gson();
+    return gson.fromJson(json, GsonUser.class);
   }
 }
