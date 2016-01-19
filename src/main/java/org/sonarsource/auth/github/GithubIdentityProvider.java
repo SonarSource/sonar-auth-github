@@ -19,6 +19,8 @@
  */
 package org.sonarsource.auth.github;
 
+import com.github.scribejava.apis.GitHubApi;
+import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
@@ -34,10 +36,10 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
 
   private static final Token EMPTY_TOKEN = null;
 
-  private final GithubService service;
+  private final GithubSettings settings;
 
-  public GithubIdentityProvider(GithubService service) {
-    this.service = service;
+  public GithubIdentityProvider(GithubSettings settings) {
+    this.settings = settings;
   }
 
   @Override
@@ -52,18 +54,24 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
 
   @Override
   public String getIconPath() {
+    // URL of src/main/resources/static/github.svg at runtime
     return "/static/authgithub/github.svg";
   }
 
   @Override
   public boolean isEnabled() {
-    return service.isEnabled();
+    return settings.isEnabled();
+  }
+
+  @Override
+  public boolean allowsUsersToSignUp() {
+    return settings.allowUsersToSignUp();
   }
 
   @Override
   public void init(InitContext context) {
     String state = context.generateCsrfState();
-    OAuthService scribe = service.prepareScribe(context)
+    OAuthService scribe = prepareScribe(context)
       .scope("user")
       .state(state)
       .build();
@@ -76,7 +84,7 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
     context.verifyCsrfState();
 
     HttpServletRequest request = context.getRequest();
-    OAuthService scribe = service.prepareScribe(context).build();
+    OAuthService scribe = prepareScribe(context).build();
     String oAuthVerifier = request.getParameter("code");
     Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
 
@@ -94,5 +102,16 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
       .build();
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
+  }
+
+  private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
+    if (!isEnabled()) {
+      throw new IllegalStateException("Github Authentication is disabled");
+    }
+    return new ServiceBuilder()
+      .provider(GitHubApi.class)
+      .apiKey(settings.clientId())
+      .apiSecret(settings.clientSecret())
+      .callback(context.getCallbackUrl());
   }
 }

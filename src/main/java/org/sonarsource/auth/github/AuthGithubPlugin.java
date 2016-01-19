@@ -28,8 +28,8 @@ public class AuthGithubPlugin extends SonarPlugin {
   public List getExtensions() {
     List extensions = new ArrayList();
     extensions.add(GithubIdentityProvider.class);
-    extensions.add(GithubService.class);
-    extensions.addAll(GithubProperties.definitions());
+    extensions.add(GithubSettings.class);
+    extensions.addAll(GithubSettings.definitions());
     return extensions;
   }
 }

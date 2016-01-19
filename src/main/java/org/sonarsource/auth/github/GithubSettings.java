@@ -21,36 +21,74 @@ package org.sonarsource.auth.github;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.sonar.api.PropertyType;
 import org.sonar.api.config.PropertyDefinition;
+import org.sonar.api.config.Settings;
+import org.sonar.api.server.ServerSide;
 
-public class GithubProperties {
+@ServerSide
+public class GithubSettings {
 
   public static final String CLIENT_ID = "sonar.auth.github.clientId";
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret";
   public static final String ENABLED = "sonar.auth.github.enabled";
+  public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
+  public static final String CATEGORY = "Github";
+
+  private final Settings settings;
+
+  public GithubSettings(Settings settings) {
+    this.settings = settings;
+  }
+
+  @CheckForNull
+  public String clientId() {
+    return settings.getString(CLIENT_ID);
+  }
+
+  @CheckForNull
+  public String clientSecret() {
+    return settings.getString(CLIENT_SECRET);
+  }
+
+  public boolean isEnabled() {
+    return settings.getBoolean(ENABLED) && clientId() != null && clientSecret() != null;
+  }
+
+  public boolean allowUsersToSignUp() {
+    return settings.getBoolean(ALLOW_USERS_TO_SIGN_UP);
+  }
 
   public static List<PropertyDefinition> definitions() {
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
         .name("Enabled")
-        .description("TODO")
-        .category("Github")
+        .description("Enable Github users to login. Value is ignored if client ID and secret are not defined.")
+        .category(CATEGORY)
         .type(PropertyType.BOOLEAN)
         .defaultValue(String.valueOf(false))
         .index(1)
         .build(),
+      PropertyDefinition.builder(ENABLED)
+        .name("Allow users to sign-up")
+        .description("TODO")
+        .category(CATEGORY)
+        .type(PropertyType.BOOLEAN)
+        .defaultValue(String.valueOf(true))
+        .index(2)
+        .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
         .description("TODO")
-        .category("Github")
-        .index(2)
+        .category(CATEGORY)
+        .index(3)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
         .description("TODO")
-        .category("Github")
-        .index(3)
+        .category(CATEGORY)
+        .index(4)
         .build()
       );
   }
