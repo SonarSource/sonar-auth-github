@@ -72,7 +72,7 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
   public void init(InitContext context) {
     String state = context.generateCsrfState();
     OAuthService scribe = prepareScribe(context)
-      .scope("user")
+      .scope("user:email")
       .state(state)
       .build();
     String url = scribe.getAuthorizationUrl(EMPTY_TOKEN);
@@ -93,6 +93,7 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
 
     com.github.scribejava.core.model.Response userResponse = userRequest.send();
     // TODO test if successful
+    System.out.println("RECEIVED " + userResponse.getBody());
     GsonUser gsonUser = GsonUser.parse(userResponse.getBody());
 
     UserIdentity userIdentity = UserIdentity.builder()

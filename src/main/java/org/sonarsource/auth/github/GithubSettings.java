@@ -34,8 +34,8 @@ public class GithubSettings {
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret";
   public static final String ENABLED = "sonar.auth.github.enabled";
   public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
-  // TODO fix category
-  public static final String CATEGORY = "Github";
+  public static final String CATEGORY = "security";
+  public static final String SUBCATEGORY = "Github";
 
   private final Settings settings;
 
@@ -62,34 +62,39 @@ public class GithubSettings {
   }
 
   public static List<PropertyDefinition> definitions() {
+    int index = 1;
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
         .name("Enabled")
         .description("Enable Github users to login. Value is ignored if client ID and secret are not defined.")
         .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
         .type(PropertyType.BOOLEAN)
         .defaultValue(String.valueOf(false))
-        .index(1)
-        .build(),
-      PropertyDefinition.builder(ENABLED)
-        .name("Allow users to sign-up")
-        .description("TODO")
-        .category(CATEGORY)
-        .type(PropertyType.BOOLEAN)
-        .defaultValue(String.valueOf(true))
-        .index(2)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
         .description("TODO")
         .category(CATEGORY)
-        .index(3)
+        .subCategory(SUBCATEGORY)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
         .description("TODO")
         .category(CATEGORY)
-        .index(4)
+        .subCategory(SUBCATEGORY)
+        .index(index++)
+        .build(),
+      PropertyDefinition.builder(ALLOW_USERS_TO_SIGN_UP)
+        .name("Allow users to sign-up")
+        .description("TODO")
+        .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
+        .type(PropertyType.BOOLEAN)
+        .defaultValue(String.valueOf(true))
+        .index(index++)
         .build()
       );
   }

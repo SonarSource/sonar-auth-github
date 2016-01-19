@@ -40,6 +40,11 @@
     </developer>
   </developers>
 
+  <organization>
+    <name>SonarSource</name>
+    <url>http://sonarsource.com</url>
+  </organization>
+
   <dependencies>
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
