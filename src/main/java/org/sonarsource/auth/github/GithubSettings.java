@@ -75,26 +75,26 @@ public class GithubSettings {
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
-        .description("TODO")
+        .description("Client ID provided by Github when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
-        .description("TODO")
+        .description("Client password provided by Github when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)
         .build(),
       PropertyDefinition.builder(ALLOW_USERS_TO_SIGN_UP)
         .name("Allow users to sign-up")
-        .description("TODO")
+        .description("Allow new users to authenticate. When set to 'false', only existing users will be able to authenticate to the server.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .type(PropertyType.BOOLEAN)
         .defaultValue(String.valueOf(true))
-        .index(index++)
+        .index(index)
         .build()
       );
   }
