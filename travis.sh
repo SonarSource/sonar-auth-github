@@ -14,9 +14,7 @@ function strongEcho {
   echo "================ $1 ================="
 }
 
-# temporary build of SonarQube 5.4-SNAPSHOT. Will be removed when SNAPSHOT shared repository will be available
-# or when dependency on sonar-plugin-api will be RELEASE.
-build "SonarSource/sonarqube" "7f427416a8ebfe5b68e6edf6f31cd372e36076d2"
+build_snapshot "SonarSource/sonarqube"
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
   strongEcho 'Build and analyze commit in master'
