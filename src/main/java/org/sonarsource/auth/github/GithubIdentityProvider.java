@@ -31,6 +31,8 @@ import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
 
+import static java.lang.String.format;
+
 @ServerSide
 public class GithubIdentityProvider implements OAuth2IdentityProvider {
 
@@ -92,8 +94,10 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
     scribe.signRequest(accessToken, userRequest);
 
     com.github.scribejava.core.model.Response userResponse = userRequest.send();
-    // TODO test if successful
-    System.out.println("RECEIVED " + userResponse.getBody());
+    if (!userResponse.isSuccessful()) {
+      throw new IllegalStateException(format("Fail to authenticate the user. Error code is %s, Body of the response is %s",
+        userResponse.getCode(), userResponse.getBody()));
+    }
     GsonUser gsonUser = GsonUser.parse(userResponse.getBody());
 
     UserIdentity userIdentity = UserIdentity.builder()
