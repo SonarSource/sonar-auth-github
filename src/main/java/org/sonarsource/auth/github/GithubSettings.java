@@ -22,10 +22,14 @@ package org.sonarsource.auth.github;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import org.sonar.api.PropertyType;
 import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.ServerSide;
+
+import static java.lang.String.format;
+import static java.lang.String.valueOf;
+import static org.sonar.api.PropertyType.BOOLEAN;
+import static org.sonar.api.PropertyType.SINGLE_SELECT_LIST;
 
 @ServerSide
 public class GithubSettings {
@@ -34,6 +38,12 @@ public class GithubSettings {
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret";
   public static final String ENABLED = "sonar.auth.github.enabled";
   public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
+
+  public static final String LOGIN_STRATEGY = "sonar.auth.github.loginStrategy";
+  public static final String LOGIN_STRATEGY_UNIQUE = "Unique";
+  public static final String LOGIN_STRATEGY_PROVIDER_ID = "Same as provider id";
+  public static final String LOGIN_STRATEGY_DEFAULT_VALUE = LOGIN_STRATEGY_UNIQUE;
+
   public static final String CATEGORY = "security";
   public static final String SUBCATEGORY = "Github";
 
@@ -54,11 +64,15 @@ public class GithubSettings {
   }
 
   public boolean isEnabled() {
-    return settings.getBoolean(ENABLED) && clientId() != null && clientSecret() != null;
+    return settings.getBoolean(ENABLED) && clientId() != null && clientSecret() != null && loginStrategy() != null;
   }
 
   public boolean allowUsersToSignUp() {
     return settings.getBoolean(ALLOW_USERS_TO_SIGN_UP);
+  }
+
+  public String loginStrategy(){
+    return settings.getString(LOGIN_STRATEGY);
   }
 
   public static List<PropertyDefinition> definitions() {
@@ -69,8 +83,8 @@ public class GithubSettings {
         .description("Enable Github users to login. Value is ignored if client ID and secret are not defined.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .type(PropertyType.BOOLEAN)
-        .defaultValue(String.valueOf(false))
+        .type(BOOLEAN)
+        .defaultValue(valueOf(false))
         .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
@@ -92,8 +106,20 @@ public class GithubSettings {
         .description("Allow new users to authenticate. When set to 'false', only existing users will be able to authenticate to the server.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .type(PropertyType.BOOLEAN)
-        .defaultValue(String.valueOf(true))
+        .type(BOOLEAN)
+        .defaultValue(valueOf(true))
+        .index(index++)
+        .build(),
+      PropertyDefinition.builder(LOGIN_STRATEGY)
+        .name("Login generation strategy")
+        .description(format("When the login strategy is set to '%s', the user's login will be unique. " +
+          "When the login strategy is set to '%s', the user's login will be the provider id.",
+          LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID))
+        .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
+        .type(SINGLE_SELECT_LIST)
+        .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
+        .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
         .index(index)
         .build()
       );

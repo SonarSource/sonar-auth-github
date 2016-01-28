@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
 
 public class GithubIdentityProviderTest {
 
@@ -52,6 +53,7 @@ public class GithubIdentityProviderTest {
   public void is_enabled() throws Exception {
     settings.setProperty("sonar.auth.github.clientId", "id");
     settings.setProperty("sonar.auth.github.clientSecret", "secret");
+    settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
     settings.setProperty("sonar.auth.github.enabled", true);
     assertThat(underTest.isEnabled()).isTrue();
 
@@ -85,6 +87,7 @@ public class GithubIdentityProviderTest {
     if (enabled) {
       settings.setProperty("sonar.auth.github.clientId", "id");
       settings.setProperty("sonar.auth.github.clientSecret", "secret");
+      settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
       settings.setProperty("sonar.auth.github.enabled", true);
     } else {
       settings.setProperty("sonar.auth.github.enabled", false);

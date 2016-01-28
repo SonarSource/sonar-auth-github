@@ -27,11 +27,14 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
 
 import static java.lang.String.format;
+import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_PROVIDER_ID;
+import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_UNIQUE;
 
 @ServerSide
 public class GithubIdentityProvider implements OAuth2IdentityProvider {
@@ -101,7 +104,8 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
     GsonUser gsonUser = GsonUser.parse(userResponse.getBody());
 
     UserIdentity userIdentity = UserIdentity.builder()
-      .setId(gsonUser.getLogin())
+      .setProviderLogin(gsonUser.getLogin())
+      .setLogin(getLogin(gsonUser))
       .setName(gsonUser.getName())
       .setEmail(gsonUser.getEmail())
       .build();
@@ -118,5 +122,20 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
+  }
+
+  private String getLogin(GsonUser gsonUser) {
+    String loginStrategy = settings.loginStrategy();
+    if (LOGIN_STRATEGY_UNIQUE.equals(loginStrategy)) {
+      return generateUniqueLogin(gsonUser);
+    } else if (LOGIN_STRATEGY_PROVIDER_ID.equals(loginStrategy)) {
+      return gsonUser.getLogin();
+    } else {
+      throw new IllegalStateException(format("Login strategy not found : %s", loginStrategy));
+    }
+  }
+
+  private String generateUniqueLogin(GsonUser gsonUser) {
+    return DigestUtils.sha256Hex(getKey() + ":" + gsonUser.getLogin());
   }
 }

@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.sonar.api.config.Settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
+import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 
 public class GithubSettingsTest {
 
@@ -34,6 +36,7 @@ public class GithubSettingsTest {
   public void is_enabled() throws Exception {
     settings.setProperty("sonar.auth.github.clientId", "id");
     settings.setProperty("sonar.auth.github.clientSecret", "secret");
+    settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
 
     settings.setProperty("sonar.auth.github.enabled", true);
     assertThat(underTest.isEnabled()).isTrue();
@@ -43,9 +46,10 @@ public class GithubSettingsTest {
   }
 
   @Test
-  public void is_enabled_always_return_false_when_no_client_settings_defined() throws Exception {
+  public void is_enabled_always_return_false_when_no_settings_defined() throws Exception {
     settings.setProperty("sonar.auth.github.clientId", (String) null);
     settings.setProperty("sonar.auth.github.clientSecret", (String) null);
+    settings.setProperty("sonar.auth.github.loginStrategy", (String) null);
 
     settings.setProperty("sonar.auth.github.enabled", false);
     assertThat(underTest.isEnabled()).isFalse();
@@ -67,6 +71,12 @@ public class GithubSettingsTest {
   }
 
   @Test
+  public void return_login_strategy() throws Exception {
+    settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_PROVIDER_ID);
+    assertThat(underTest.loginStrategy()).isEqualTo(LOGIN_STRATEGY_PROVIDER_ID);
+  }
+
+  @Test
   public void allow_users_to_sign_up() throws Exception {
     settings.setProperty("sonar.auth.github.allowUsersToSignUp", "true");
     assertThat(underTest.allowUsersToSignUp()).isTrue();
@@ -77,6 +87,6 @@ public class GithubSettingsTest {
 
   @Test
   public void definitions() throws Exception {
-    assertThat(GithubSettings.definitions()).hasSize(4);
+    assertThat(GithubSettings.definitions()).hasSize(5);
   }
 }
