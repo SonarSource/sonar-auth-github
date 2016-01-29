@@ -13,8 +13,9 @@ sudo: false
 cache:
   directories:
     - $HOME/.m2/repository
-    # for analysis
     - $HOME/.sonar
 
 notifications:
   email: false
+  webhooks:
+    - secure: "UV0FvQYokmeR1N6FhLoEOxwYFvWbzMmhTJ2/o/cMXp87IWOgs6tEqfOh8jRgpJtWTEehTvJYEaMnjUAd4WPkUyE8+lFHwwz3C4CkKoTLtHrUs1NY02oII1+AfA3AiPhytOEdxhIqc+IG+NjR3kXuP3IieqmQj706jQ/Ky+YZFruXbor+g3brL4Rjsp+X9coAi6JgStSAwxBJgXDt0/DboRXSC0NJ8ArFPGw5cHdFn+F8QCcwYBrbfhtOzvVQsxczbgzwbOeLt7V/BPyZDfP70Qd3LuqGInwjpr909fHFxv/y4LrrMudKWHPnba/V+T+aA27AHryzRxHZKa6PJOQ+IkE+vJOEKnweeL0EVRsTu8/rAwbWmK3GSKnubU1BY7Ux7qYgXNEg5U5nqJrkFacVLYvqMqA0iEyDx8G2oZC39ekxDAAfxbPRssW58RY12t07hqGPvBFRZU7N7w6M6E4Aowa9hcvnsdC3gGNCUmZM8qFbz4P/Bm4PvDWE7b5YsHkiOyVjHDG7lkVswusTEnNOp3D/t9o0DaVyhZUwxzlptcBSnb8VFcMMAfLyHCCTPTMYHtHGR1lgnZkt8BINns1oU6lJ/TkyiasdzcszowdhIuIuIxG/OJrAfGq9QNGY84se/rv6HRRMcRp46J7jx98EhinzTE1PKNkH1B7pO8M+J5Y="

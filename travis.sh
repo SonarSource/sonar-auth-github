@@ -2,53 +2,58 @@
 
 set -euo pipefail
 
-function installTravisTools {
+function configureTravis {
   mkdir ~/.local
-  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v21 | tar zx --strip-components 1 -C ~/.local
+  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v23 | tar zx --strip-components 1 -C ~/.local
   source ~/.local/bin/install
 }
-installTravisTools
+configureTravis
 
 function strongEcho {
   echo ""
   echo "================ $1 ================="
 }
 
-build_snapshot "SonarSource/sonarqube"
+if [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  strongEcho 'Build, deploy and analyze master'
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-  strongEcho 'Build and analyze commit in master'
-  # this commit is master must be built and analyzed (with upload of report)
+  SONAR_PROJECT_VERSION=`maven_expression "project.version"`
+
+  # Do not deploy a SNAPSHOT version but the release version related to this build
+  set_maven_build_version $TRAVIS_BUILD_NUMBER
+
+  export MAVEN_OPTS="-Xmx1G -Xms128m"
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
+      -Pcoverage-per-test,deploy-sonarsource \
+      -Dmaven.test.redirectTestOutputToFile=false \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -Dsonar.projectVersion=$SONAR_PROJECT_VERSION \
+      -B -e -V
+
+elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
+  strongEcho 'Build and analyze pull request, no deploy'
+
+  # No need for Maven phase "install" as the generated JAR file does not need to be installed
+  # in Maven local repository. Phase "verify" is enough.
+
   mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
-    -Pcoverage-per-test \
-    -Dmaven.test.redirectTestOutputToFile=false \
-    -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.login=$SONAR_TOKEN \
-    -B -e -V
-
-elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-  # For security reasons environment variables are not available on the pull requests
-  # coming from outside repositories
-  # http://docs.travis-ci.com/user/pull-requests/#Security-Restrictions-when-testing-Pull-Requests
-
-  strongEcho 'Build and analyze pull request'
-  # this pull request must be built and analyzed (without upload of report)
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
-    -Pcoverage-per-test \
-    -Dmaven.test.redirectTestOutputToFile=false \
-    -Dsonar.analysis.mode=issues \
-    -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
-    -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
-    -Dsonar.github.oauth=$GITHUB_TOKEN \
-    -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.login=$SONAR_TOKEN \
-    -B -e -V
+      -Dmaven.test.redirectTestOutputToFile=false \
+      -Dsonar.analysis.mode=issues \
+      -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
+      -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
+      -Dsonar.github.oauth=$GITHUB_TOKEN \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -B -e -V
 
 else
-  strongEcho 'Build, no analysis'
-  # Build branch, without any analysis
+  strongEcho 'Build, no analysis, no deploy'
 
-  # No need for Maven goal "install" as the generated JAR file does not need to be installed
-  # in Maven local repository
-  mvn verify -Dmaven.test.redirectTestOutputToFile=false -B -e -V
+  # No need for Maven phase "install" as the generated JAR file does not need to be installed
+  # in Maven local repository. Phase "verify" is enough.
+
+  mvn verify \
+      -Dmaven.test.redirectTestOutputToFile=false \
+      -B -e -V
 fi
