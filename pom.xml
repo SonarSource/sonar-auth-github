@@ -56,7 +56,7 @@
       temporary dependency which is not deployed in maven central but
       in https://repox.sonarsource.com/sonarsource
       -->
-      <version>5.4-SNAPSHOT</version>
+      <version>5.4-build7650</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
