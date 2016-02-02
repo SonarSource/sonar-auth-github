@@ -1,5 +1,5 @@
 /*
- * Github Authentication for SonarQube
+ * GitHub Authentication for SonarQube
  * Copyright (C) 2016-2016 SonarSource SA
  * mailto:contact AT sonarsource DOT com
  *
@@ -45,7 +45,7 @@ public class GithubIdentityProviderTest {
   @Test
   public void check_fields() throws Exception {
     assertThat(underTest.getKey()).isEqualTo("github");
-    assertThat(underTest.getName()).isEqualTo("Github");
+    assertThat(underTest.getName()).isEqualTo("GitHub");
     assertThat(underTest.getIconPath()).isEqualTo("/static/authgithub/github.svg");
   }
 
@@ -79,7 +79,7 @@ public class GithubIdentityProviderTest {
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
 
     thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Github Authentication is disabled");
+    thrown.expectMessage("GitHub Authentication is disabled");
     underTest.init(context);
   }
 

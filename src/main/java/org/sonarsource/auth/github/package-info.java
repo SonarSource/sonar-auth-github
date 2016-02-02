@@ -1,5 +1,5 @@
 /*
- * Github Authentication for SonarQube
+ * GitHub Authentication for SonarQube
  * Copyright (C) 2016-2016 SonarSource SA
  * mailto:contact AT sonarsource DOT com
  *
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 @ParametersAreNonnullByDefault
 package org.sonarsource.auth.github;
 

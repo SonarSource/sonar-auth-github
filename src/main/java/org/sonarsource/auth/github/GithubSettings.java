@@ -1,5 +1,5 @@
 /*
- * Github Authentication for SonarQube
+ * GitHub Authentication for SonarQube
  * Copyright (C) 2016-2016 SonarSource SA
  * mailto:contact AT sonarsource DOT com
  *
