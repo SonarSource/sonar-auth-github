@@ -45,7 +45,7 @@ public class GithubSettings {
   public static final String LOGIN_STRATEGY_DEFAULT_VALUE = LOGIN_STRATEGY_UNIQUE;
 
   public static final String CATEGORY = "security";
-  public static final String SUBCATEGORY = "Github";
+  public static final String SUBCATEGORY = "GitHub";
 
   private final Settings settings;
 
@@ -80,7 +80,7 @@ public class GithubSettings {
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
         .name("Enabled")
-        .description("Enable Github users to login. Value is ignored if client ID and secret are not defined.")
+        .description("Enable GitHub users to login. Value is ignored if client ID and secret are not defined.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
@@ -89,14 +89,14 @@ public class GithubSettings {
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
-        .description("Client ID provided by Github when registering the application")
+        .description("Client ID provided by GitHub when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
-        .description("Client password provided by Github when registering the application")
+        .description("Client password provided by GitHub when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)

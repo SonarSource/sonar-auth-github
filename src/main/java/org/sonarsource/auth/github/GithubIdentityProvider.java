@@ -115,7 +115,7 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
 
   private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
     if (!isEnabled()) {
-      throw new IllegalStateException("Github Authentication is disabled");
+      throw new IllegalStateException("GitHub Authentication is disabled");
     }
     return new ServiceBuilder()
       .provider(GitHubApi.class)
