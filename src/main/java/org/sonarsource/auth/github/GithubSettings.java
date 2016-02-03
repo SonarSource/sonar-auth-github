@@ -41,7 +41,7 @@ public class GithubSettings {
 
   public static final String LOGIN_STRATEGY = "sonar.auth.github.loginStrategy";
   public static final String LOGIN_STRATEGY_UNIQUE = "Unique";
-  public static final String LOGIN_STRATEGY_PROVIDER_ID = "Same as provider id";
+  public static final String LOGIN_STRATEGY_PROVIDER_ID = "Same as GitHub login";
   public static final String LOGIN_STRATEGY_DEFAULT_VALUE = LOGIN_STRATEGY_UNIQUE;
 
   public static final String CATEGORY = "security";
@@ -112,8 +112,8 @@ public class GithubSettings {
         .build(),
       PropertyDefinition.builder(LOGIN_STRATEGY)
         .name("Login generation strategy")
-        .description(format("When the login strategy is set to '%s', the user's login will be unique. " +
-          "When the login strategy is set to '%s', the user's login will be the provider id.",
+        .description(format("When the login strategy is set to '%s', the user's login will be auto-generated the first time so that it is unique. " +
+          "When the login strategy is set to '%s', the user's login will be the GitHub login.",
           LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID))
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
