@@ -46,7 +46,8 @@ public class GithubIdentityProviderTest {
   public void check_fields() throws Exception {
     assertThat(underTest.getKey()).isEqualTo("github");
     assertThat(underTest.getName()).isEqualTo("GitHub");
-    assertThat(underTest.getIconPath()).isEqualTo("/static/authgithub/github.svg");
+    assertThat(underTest.getDisplay().getIconPath()).isEqualTo("/static/authgithub/github.svg");
+    assertThat(underTest.getDisplay().getBackgroundColor()).isEqualTo("#444444");
   }
 
   @Test

@@ -29,6 +29,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.sonar.api.server.ServerSide;
+import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
 
@@ -58,9 +59,12 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
   }
 
   @Override
-  public String getIconPath() {
-    // URL of src/main/resources/static/github.svg at runtime
-    return "/static/authgithub/github.svg";
+  public Display getDisplay() {
+    return Display.builder()
+      // URL of src/main/resources/static/github.svg at runtime
+      .setIconPath("/static/authgithub/github.svg")
+      .setBackgroundColor("#444444")
+      .build();
   }
 
   @Override
