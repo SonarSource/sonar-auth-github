@@ -32,6 +32,8 @@ import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 import static java.lang.String.format;
 import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_PROVIDER_ID;
@@ -39,6 +41,8 @@ import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_UNIQUE;
 
 @ServerSide
 public class GithubIdentityProvider implements OAuth2IdentityProvider {
+
+  private static final Logger LOGGER = Loggers.get(GithubIdentityProvider.class);
 
   private static final Token EMPTY_TOKEN = null;
 
@@ -105,7 +109,9 @@ public class GithubIdentityProvider implements OAuth2IdentityProvider {
       throw new IllegalStateException(format("Fail to authenticate the user. Error code is %s, Body of the response is %s",
         userResponse.getCode(), userResponse.getBody()));
     }
-    GsonUser gsonUser = GsonUser.parse(userResponse.getBody());
+    String userResponseBody = userResponse.getBody();
+    LOGGER.trace("User response received : %s", userResponseBody);
+    GsonUser gsonUser = GsonUser.parse(userResponseBody);
 
     UserIdentity userIdentity = UserIdentity.builder()
       .setProviderLogin(gsonUser.getLogin())
