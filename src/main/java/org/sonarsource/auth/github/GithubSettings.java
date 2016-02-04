@@ -88,14 +88,14 @@ public class GithubSettings {
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
-        .description("Client ID provided by GitHub when registering the application")
+        .description("Client ID provided by GitHub when registering the application.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(2)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
-        .description("Client password provided by GitHub when registering the application")
+        .description("Client password provided by GitHub when registering the application.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(3)
