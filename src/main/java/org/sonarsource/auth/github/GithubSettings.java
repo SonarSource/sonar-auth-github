@@ -76,7 +76,6 @@ public class GithubSettings {
   }
 
   public static List<PropertyDefinition> definitions() {
-    int index = 1;
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
         .name("Enabled")
@@ -85,21 +84,21 @@ public class GithubSettings {
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
         .defaultValue(valueOf(false))
-        .index(index++)
+        .index(1)
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
         .description("Client ID provided by GitHub when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .index(index++)
+        .index(2)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
         .description("Client password provided by GitHub when registering the application")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .index(index++)
+        .index(3)
         .build(),
       PropertyDefinition.builder(ALLOW_USERS_TO_SIGN_UP)
         .name("Allow users to sign-up")
@@ -108,7 +107,7 @@ public class GithubSettings {
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
         .defaultValue(valueOf(true))
-        .index(index++)
+        .index(4)
         .build(),
       PropertyDefinition.builder(LOGIN_STRATEGY)
         .name("Login generation strategy")
@@ -120,7 +119,7 @@ public class GithubSettings {
         .type(SINGLE_SELECT_LIST)
         .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
         .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
-        .index(index)
+        .index(5)
         .build()
       );
   }
