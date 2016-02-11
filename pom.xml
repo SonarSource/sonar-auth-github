@@ -52,11 +52,7 @@
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <!--
-      temporary dependency which is not deployed in maven central but
-      in https://repox.sonarsource.com/sonarsource
-      -->
-      <version>5.4-build7801</version>
+      <version>5.4-RC1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
