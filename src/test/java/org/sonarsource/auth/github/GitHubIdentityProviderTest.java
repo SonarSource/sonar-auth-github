@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
 
-public class GithubIdentityProviderTest2 {
+public class GitHubIdentityProviderTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
