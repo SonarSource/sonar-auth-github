@@ -27,9 +27,9 @@ public class AuthGithubPlugin extends SonarPlugin {
   @Override
   public List getExtensions() {
     List extensions = new ArrayList();
-    extensions.add(GithubIdentityProvider.class);
-    extensions.add(GithubSettings.class);
-    extensions.addAll(GithubSettings.definitions());
+    extensions.add(GitHubIdentityProvider.class);
+    extensions.add(GitHubSettings.class);
+    extensions.addAll(GitHubSettings.definitions());
     return extensions;
   }
 }
