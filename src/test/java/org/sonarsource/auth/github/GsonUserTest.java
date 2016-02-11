@@ -19,45 +19,30 @@
  */
 package org.sonarsource.auth.github;
 
-import com.google.gson.Gson;
+import org.junit.Test;
 
-/**
- * Lite representation of JSON response of GET https://api.github.com/user
- */
-public class GsonUser {
-  private String login;
-  private String name;
-  private String email;
+import static org.assertj.core.api.Assertions.assertThat;
 
-  public String getLogin() {
-    return login;
+public class GsonUserTest {
+
+  @Test
+  public void test_getter_and_setter() throws Exception {
+    GsonUser underTest = new GsonUser()
+      .setLogin("john")
+      .setName("John")
+      .setEmail("john@email.com");
+
+    assertThat(underTest.getLogin()).isEqualTo("login");
+    assertThat(underTest.getName()).isEqualTo("John");
+    assertThat(underTest.getEmail()).isEqualTo("john@email.com");
   }
 
-  public GsonUser setLogin(String login) {
-    this.login = login;
-    return this;
-  }
+  @Test
+  public void parse_from_json() throws Exception {
+    GsonUser underTest = GsonUser.parse("{login:john, name:John, email:john@email.com}");
 
-  public String getName() {
-    return name;
-  }
-
-  public GsonUser setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public GsonUser setEmail(String email) {
-    this.email = email;
-    return this;
-  }
-
-  public static GsonUser parse(String json) {
-    Gson gson = new Gson();
-    return gson.fromJson(json, GsonUser.class);
+    assertThat(underTest.getLogin()).isEqualTo("john");
+    assertThat(underTest.getName()).isEqualTo("John");
+    assertThat(underTest.getEmail()).isEqualTo("john@email.com");
   }
 }
