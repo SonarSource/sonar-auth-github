@@ -32,7 +32,7 @@ public class GsonUserTest {
       .setName("John")
       .setEmail("john@email.com");
 
-    assertThat(underTest.getLogin()).isEqualTo("login");
+    assertThat(underTest.getLogin()).isEqualTo("john");
     assertThat(underTest.getName()).isEqualTo("John");
     assertThat(underTest.getEmail()).isEqualTo("john@email.com");
   }
