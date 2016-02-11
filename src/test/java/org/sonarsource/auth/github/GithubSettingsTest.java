@@ -23,14 +23,14 @@ import org.junit.Test;
 import org.sonar.api.config.Settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
-import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
+import static org.sonarsource.auth.github.GithubSettings2.LOGIN_STRATEGY_DEFAULT_VALUE;
+import static org.sonarsource.auth.github.GithubSettings2.LOGIN_STRATEGY_PROVIDER_ID;
 
 public class GithubSettingsTest {
 
   Settings settings = new Settings();
 
-  GitHubSettings underTest = new GitHubSettings(settings);
+  GithubSettings2 underTest = new GithubSettings2(settings);
 
   @Test
   public void is_enabled() throws Exception {
@@ -87,6 +87,6 @@ public class GithubSettingsTest {
 
   @Test
   public void definitions() throws Exception {
-    assertThat(GitHubSettings.definitions()).hasSize(5);
+    assertThat(GithubSettings2.definitions()).hasSize(5);
   }
 }

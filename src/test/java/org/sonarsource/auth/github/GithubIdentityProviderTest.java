@@ -29,18 +29,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.sonarsource.auth.github.GithubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
+import static org.sonarsource.auth.github.GithubSettings2.LOGIN_STRATEGY_DEFAULT_VALUE;
 
-public class GithubIdentityProviderTest {
+public class GitHubIdentityProviderTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   Settings settings = new Settings();
 
-  GithubSettings githubSettings = new GithubSettings(settings);
+  GithubSettings2 githubSettings = new GithubSettings2(settings);
 
-  GithubIdentityProvider underTest = new GithubIdentityProvider(githubSettings);
+  GithubIdentityProvider2 underTest = new GithubIdentityProvider2(githubSettings);
 
   @Test
   public void check_fields() throws Exception {
