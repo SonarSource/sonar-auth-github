@@ -46,15 +46,32 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void is_enabled_always_return_false_when_no_settings_defined() throws Exception {
+  public void is_enabled_always_return_false_when_client_id_is_null() throws Exception {
+    settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.clientId", (String) null);
+    settings.setProperty("sonar.auth.github.clientSecret", "secret");
+    settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
+
+    assertThat(underTest.isEnabled()).isFalse();
+  }
+
+  @Test
+  public void is_enabled_always_return_false_when_client_secret_is_null() throws Exception {
+    settings.setProperty("sonar.auth.github.enabled", true);
+    settings.setProperty("sonar.auth.github.clientId", "id");
     settings.setProperty("sonar.auth.github.clientSecret", (String) null);
+    settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
+
+    assertThat(underTest.isEnabled()).isFalse();
+  }
+
+  @Test
+  public void is_enabled_always_return_false_when_login_strategy_is_null() throws Exception {
+    settings.setProperty("sonar.auth.github.enabled", true);
+    settings.setProperty("sonar.auth.github.clientId", "id");
+    settings.setProperty("sonar.auth.github.clientSecret", "secret");
     settings.setProperty("sonar.auth.github.loginStrategy", (String) null);
 
-    settings.setProperty("sonar.auth.github.enabled", false);
-    assertThat(underTest.isEnabled()).isFalse();
-
-    settings.setProperty("sonar.auth.github.enabled", false);
     assertThat(underTest.isEnabled()).isFalse();
   }
 
