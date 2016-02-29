@@ -44,8 +44,8 @@ public class GitHubSettings {
   public static final String LOGIN_STRATEGY_PROVIDER_ID = "Same as GitHub login";
   public static final String LOGIN_STRATEGY_DEFAULT_VALUE = LOGIN_STRATEGY_UNIQUE;
 
-  public static final String CATEGORY = "GitHub";
-  public static final String SUBCATEGORY = "Authentication";
+  public static final String CATEGORY = "github";
+  public static final String SUBCATEGORY = "authentication";
 
   private final Settings settings;
 
