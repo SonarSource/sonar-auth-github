@@ -27,7 +27,6 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
@@ -146,6 +145,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   }
 
   private String generateUniqueLogin(GsonUser gsonUser) {
-    return DigestUtils.sha256Hex(getKey() + ":" + gsonUser.getLogin());
+    return getKey() + "@" + gsonUser.getLogin();
   }
 }
