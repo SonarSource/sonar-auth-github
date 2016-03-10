@@ -68,6 +68,7 @@ public class GitHubIdentityProviderTest {
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
     when(context.generateCsrfState()).thenReturn("state");
     when(context.getCallbackUrl()).thenReturn("http://localhost/callback");
+    settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
 
     underTest.init(context);
 

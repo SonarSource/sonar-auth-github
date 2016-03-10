@@ -30,6 +30,7 @@ import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static org.sonar.api.PropertyType.BOOLEAN;
 import static org.sonar.api.PropertyType.SINGLE_SELECT_LIST;
+import static org.sonar.api.PropertyType.STRING;
 
 @ServerSide
 public class GitHubSettings {
@@ -38,6 +39,8 @@ public class GitHubSettings {
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret";
   public static final String ENABLED = "sonar.auth.github.enabled";
   public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
+  public static final String API_URL = "sonar.auth.github.apiUrl";
+  public static final String WEB_URL = "sonar.auth.github.webUrl";
 
   public static final String LOGIN_STRATEGY = "sonar.auth.github.loginStrategy";
   public static final String LOGIN_STRATEGY_UNIQUE = "Unique";
@@ -73,6 +76,14 @@ public class GitHubSettings {
 
   public String loginStrategy(){
     return settings.getString(LOGIN_STRATEGY);
+  }
+
+  public String webURL(){
+    return settings.getString(WEB_URL);
+  }
+
+  public String apiURL(){
+    return settings.getString(API_URL);
   }
 
   public static List<PropertyDefinition> definitions() {
@@ -120,6 +131,24 @@ public class GitHubSettings {
         .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
         .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
         .index(5)
+        .build(),
+      PropertyDefinition.builder(API_URL)
+        .name("The API url for a GitHub instance.")
+        .description("The API url for a GitHub instance. https://api.github.com/ for github.com, https://github.company.com/api/v3/ when using Github Enterprise")
+        .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
+        .type(STRING)
+        .defaultValue(valueOf("https://api.github.com/"))
+        .index(6)
+        .build(),
+      PropertyDefinition.builder(WEB_URL)
+        .name("The WEB url for a GitHub instance.")
+        .description("The WEB url for a GitHub instance. https://github.com/ for github.com, https://github.company.com/ when using Github Enterprise")
+        .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
+        .type(STRING)
+        .defaultValue(valueOf("https://github.com/"))
+        .index(7)
         .build()
       );
   }
