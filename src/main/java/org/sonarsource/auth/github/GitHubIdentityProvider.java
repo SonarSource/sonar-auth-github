@@ -19,7 +19,6 @@
  */
 package org.sonarsource.auth.github;
 
-import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Token;
@@ -105,7 +104,17 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String oAuthVerifier = request.getParameter("code");
     Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
 
+    OAuthRequest userRequest = new OAuthRequest(Verb.GET, settings.apiURL() + "user", scribe);
+    scribe.signRequest(accessToken, userRequest);
     GsonUser gsonUser = getUser(scribe, accessToken);
+
+    com.github.scribejava.core.model.Response userResponse = userRequest.send();
+    if (!userResponse.isSuccessful()) {
+      throw new IllegalStateException(format("Fail to authenticate the user. Error code is %s, Body of the response is %s",
+        userResponse.getCode(), userResponse.getBody()));
+    }
+    String userResponseBody = userResponse.getBody();
+    LOGGER.trace("User response received : %s", userResponseBody);
 
     UserIdentity.Builder builder = UserIdentity.builder()
       .setProviderLogin(gsonUser.getLogin())
@@ -151,7 +160,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       throw new IllegalStateException("GitHub Authentication is disabled");
     }
     return new ServiceBuilder()
-      .provider(GitHubApi.class)
+      .provider(new GithubWithConfigurableURL(settings))
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
