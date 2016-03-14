@@ -34,6 +34,7 @@ import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
@@ -115,7 +116,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     UserIdentity userIdentity = UserIdentity.builder()
       .setProviderLogin(gsonUser.getLogin())
       .setLogin(getLogin(gsonUser))
-      .setName(gsonUser.getName())
+      .setName(getName(gsonUser))
       .setEmail(gsonUser.getEmail())
       .build();
     context.authenticate(userIdentity);
@@ -142,6 +143,11 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     } else {
       throw new IllegalStateException(format("Login strategy not found : %s", loginStrategy));
     }
+  }
+
+  private static String getName(GsonUser gsonUser) {
+    String name = gsonUser.getName();
+    return isNullOrEmpty(name) ? gsonUser.getLogin() : name;
   }
 
   private String generateUniqueLogin(GsonUser gsonUser) {
