@@ -100,10 +100,27 @@ public class GitHubSettingsTest {
 
     settings.setProperty("sonar.auth.github.allowUsersToSignUp", "false");
     assertThat(underTest.allowUsersToSignUp()).isFalse();
+
+    // default value
+    settings.setProperty("sonar.auth.github.allowUsersToSignUp", (String) null);
+    assertThat(underTest.allowUsersToSignUp()).isFalse();
+  }
+
+  @Test
+  public void sync_groups() throws Exception {
+    settings.setProperty("sonar.auth.github.groupsSync", "true");
+    assertThat(underTest.syncGroups()).isTrue();
+
+    settings.setProperty("sonar.auth.github.groupsSync", "false");
+    assertThat(underTest.syncGroups()).isFalse();
+
+    // default value
+    settings.setProperty("sonar.auth.github.groupsSync", (String) null);
+    assertThat(underTest.syncGroups()).isFalse();
   }
 
   @Test
   public void definitions() throws Exception {
-    assertThat(GitHubSettings.definitions()).hasSize(5);
+    assertThat(GitHubSettings.definitions()).hasSize(6);
   }
 }
