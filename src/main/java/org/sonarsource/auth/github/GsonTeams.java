@@ -19,16 +19,42 @@
  */
 package org.sonarsource.auth.github;
 
-import org.junit.Test;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+/**
+ * Lite representation of JSON response of GET https://api.github.com/user/orgs
+ */
+public class GsonTeams {
 
-public class AuthGitHubPluginTest {
+  private GsonTeams() {
+    // Only static methods should be called
+  }
 
-  AuthGitHubPlugin underTest = new AuthGitHubPlugin();
+  public static List<GsonTeam> parse(String json) {
+    Type collectionType = new TypeToken<Collection<GsonTeam>>() {
+    }.getType();
+    Gson gson = new Gson();
+    return gson.fromJson(json, collectionType);
+  }
 
-  @Test
-  public void test_extensions() throws Exception {
-    assertThat(underTest.getExtensions()).hasSize(8);
+  public static class GsonTeam {
+    private String slug;
+    private GsonOrganization organization;
+
+    public String getId() {
+      return slug;
+    }
+
+    public String getOrganizationId() {
+      return organization.login;
+    }
+  }
+
+  public static class GsonOrganization {
+    private String login;
   }
 }
