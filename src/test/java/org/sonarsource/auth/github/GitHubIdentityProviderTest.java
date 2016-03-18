@@ -52,8 +52,8 @@ public class GitHubIdentityProviderTest {
 
   @Test
   public void is_enabled() throws Exception {
-    settings.setProperty("sonar.auth.github.clientId", "id");
-    settings.setProperty("sonar.auth.github.clientSecret", "secret");
+    settings.setProperty("sonar.auth.github.clientId.secured", "id");
+    settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
     settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
     settings.setProperty("sonar.auth.github.enabled", true);
     assertThat(underTest.isEnabled()).isTrue();
@@ -86,8 +86,8 @@ public class GitHubIdentityProviderTest {
 
   private void setSettings(boolean enabled) {
     if (enabled) {
-      settings.setProperty("sonar.auth.github.clientId", "id");
-      settings.setProperty("sonar.auth.github.clientSecret", "secret");
+      settings.setProperty("sonar.auth.github.clientId.secured", "id");
+      settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
       settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
       settings.setProperty("sonar.auth.github.enabled", true);
     } else {
