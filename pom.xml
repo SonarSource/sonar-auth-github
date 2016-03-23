@@ -9,7 +9,7 @@
 
   <groupId>org.sonarsource.auth.github</groupId>
   <artifactId>sonar-auth-github-plugin</artifactId>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
   <name>GitHub Authentication for SonarQube</name>
   <inceptionYear>2016</inceptionYear>
@@ -31,7 +31,7 @@
     <connection>scm:git:git@github.com:SonarSource/sonar-auth-github.git</connection>
     <developerConnection>scm:git:git@github.com:SonarSource/sonar-auth-github.git</developerConnection>
     <url>https://github.com/SonarSource/sonar-auth-github</url>
-    <tag>1.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
