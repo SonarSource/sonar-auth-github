@@ -103,6 +103,16 @@ public class GitHubSettingsTest {
   }
 
   @Test
+  public void organization() throws Exception {
+    settings.setProperty("sonar.auth.github.organization", "example");
+    assertThat(underTest.organization()).isEqualTo("example");
+
+    // default value
+    settings.setProperty("sonar.auth.github.organization", (String) null);
+    assertThat(underTest.organization()).isNull();
+  }
+
+  @Test
   public void definitions() throws Exception {
     assertThat(GitHubSettings.definitions()).hasSize(6);
   }
