@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
+import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -113,6 +114,10 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     LOGGER.trace("User response received : %s", userResponseBody);
     GsonUser gsonUser = GsonUser.parse(userResponseBody);
 
+    if (settings.organization() != null && !isOrganizationMember(scribe, accessToken, settings.organization(), gsonUser.getLogin())) {
+      throw new UnauthorizedException(format("'%s' must be a member of the '%s' organization.", gsonUser, settings.organization()));
+    }
+
     UserIdentity userIdentity = UserIdentity.builder()
       .setProviderLogin(gsonUser.getLogin())
       .setLogin(getLogin(gsonUser))
@@ -121,6 +126,30 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       .build();
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
+  }
+
+  /**
+   * Check to see that login is member of organization.
+   * https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member
+   */
+  private static Boolean isOrganizationMember(OAuthService scribe, Token accessToken, String organization, String login) {
+    String requestUrl = format("https://api.github.com/orgs/%s/members/%s", organization, login);
+    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
+    scribe.signRequest(accessToken, request);
+
+    com.github.scribejava.core.model.Response response = request.send();
+    if (!response.isSuccessful()) {
+      throw new IllegalStateException(format("Fail to execute request '%s'. Error code is %s, Body of the response is %s",
+              requestUrl, response.getCode(), response.getBody()));
+    }
+
+    LOGGER.trace("Orgs response received : {}", response.getCode());
+
+    if (response.getCode() == 204) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
