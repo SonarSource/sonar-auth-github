@@ -151,6 +151,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   }
 
   private String generateUniqueLogin(GsonUser gsonUser) {
-    return getKey() + "@" + gsonUser.getLogin();
+    return gsonUser.getLogin() + "@" + getKey();
   }
 }

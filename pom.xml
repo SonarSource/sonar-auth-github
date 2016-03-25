@@ -9,7 +9,7 @@
 
   <groupId>org.sonarsource.auth.github</groupId>
   <artifactId>sonar-auth-github-plugin</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
   <name>GitHub Authentication for SonarQube</name>
   <inceptionYear>2016</inceptionYear>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <version>5.4-RC1</version>
+      <version>5.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
