@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
-import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -115,7 +114,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     GsonUser gsonUser = GsonUser.parse(userResponseBody);
 
     if (settings.organization() != null && !isOrganizationMember(scribe, accessToken, settings.organization(), gsonUser.getLogin())) {
-      throw new UnauthorizedException(format("'%s' must be a member of the '%s' organization.", gsonUser, settings.organization()));
+      throw new IllegalStateException(format("'%s' must be a member of the '%s' organization.", gsonUser, settings.organization()));
     }
 
     UserIdentity userIdentity = UserIdentity.builder()
