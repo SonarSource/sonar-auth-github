@@ -76,6 +76,10 @@ public class GitHubSettings {
     return settings.getString(LOGIN_STRATEGY);
   }
 
+  public String organization() {
+    return settings.getString(ORGANIZATION);
+  }
+
   public static List<PropertyDefinition> definitions() {
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
@@ -121,6 +125,7 @@ public class GitHubSettings {
         .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
         .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
         .index(5)
+        .build(),
       PropertyDefinition.builder(ORGANIZATION)
         .name("Organization")
         .description("Only members of this organization will be able to authenticate to the server.")
