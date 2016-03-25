@@ -85,7 +85,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   public void init(InitContext context) {
     String state = context.generateCsrfState();
     OAuthService scribe = prepareScribe(context)
-      .scope("user:email")
+      .scope("user:email,read:org")
       .state(state)
       .build();
     String url = scribe.getAuthorizationUrl(EMPTY_TOKEN);
