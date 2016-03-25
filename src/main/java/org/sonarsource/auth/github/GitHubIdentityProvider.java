@@ -113,7 +113,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     LOGGER.trace("User response received : %s", userResponseBody);
     GsonUser gsonUser = GsonUser.parse(userResponseBody);
 
-    if (settings.organization() != null && !isOrganizationMember(scribe, accessToken, settings.organization(), gsonUser.getLogin())) {
+    if (settings.organization() != null && !isOrganizationMember(accessToken, settings.organization(), gsonUser.getLogin())) {
       throw new IllegalStateException(format("'%s' must be a member of the '%s' organization.", gsonUser, settings.organization()));
     }
 
@@ -131,8 +131,13 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    * Check to see that login is member of organization.
    * https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member
    */
-  private static Boolean isOrganizationMember(OAuthService scribe, Token accessToken, String organization, String login) {
+  private Boolean isOrganizationMember(Token accessToken, String organization, String login) {
     String requestUrl = format("https://api.github.com/orgs/%s/members/%s", organization, login);
+    OAuthService scribe = new ServiceBuilder()
+      .provider(GitHubApi.class)
+      .apiKey(settings.clientId())
+      .apiSecret(settings.clientSecret())
+      .build();
     OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
     scribe.signRequest(accessToken, request);
 
