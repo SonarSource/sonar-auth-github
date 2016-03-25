@@ -38,7 +38,6 @@ public class GitHubSettings {
   public static final String CLIENT_SECRET = "sonar.auth.github.clientSecret.secured";
   public static final String ENABLED = "sonar.auth.github.enabled";
   public static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
-  public static final String GROUPS_SYNC = "sonar.auth.github.groupsSync";
 
   public static final String LOGIN_STRATEGY = "sonar.auth.github.loginStrategy";
   public static final String LOGIN_STRATEGY_UNIQUE = "Unique";
@@ -74,10 +73,6 @@ public class GitHubSettings {
 
   public String loginStrategy(){
     return settings.getString(LOGIN_STRATEGY);
-  }
-
-  public boolean syncGroups() {
-    return settings.getBoolean(GROUPS_SYNC);
   }
 
   public static List<PropertyDefinition> definitions() {
@@ -125,15 +120,6 @@ public class GitHubSettings {
         .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
         .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
         .index(5)
-        .build(),
-      PropertyDefinition.builder(GROUPS_SYNC)
-        .name("Synchronize teams as groups")
-        .description("For each team he belongs to, the user will be associated to a group named 'Organisation/Team' (if it exists) in SonarQube.")
-        .category(CATEGORY)
-        .subCategory(SUBCATEGORY)
-        .type(BOOLEAN)
-        .defaultValue(valueOf(false))
-        .index(6)
         .build()
       );
   }

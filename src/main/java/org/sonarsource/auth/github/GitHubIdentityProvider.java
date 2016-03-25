@@ -26,9 +26,6 @@ import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
-import com.google.common.base.Function;
-import java.util.List;
-import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
@@ -38,7 +35,6 @@ import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.FluentIterable.from;
 import static java.lang.String.format;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
@@ -89,7 +85,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   public void init(InitContext context) {
     String state = context.generateCsrfState();
     OAuthService scribe = prepareScribe(context)
-      .scope(settings.syncGroups() ? "user:email,read:org" : "user:email")
+      .scope("user:email")
       .state(state)
       .build();
     String url = scribe.getAuthorizationUrl(EMPTY_TOKEN);
@@ -105,45 +101,26 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String oAuthVerifier = request.getParameter("code");
     Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
 
-    GsonUser gsonUser = getUser(scribe, accessToken);
+    OAuthRequest userRequest = new OAuthRequest(Verb.GET, "https://api.github.com/user", scribe);
+    scribe.signRequest(accessToken, userRequest);
 
-    UserIdentity.Builder builder = UserIdentity.builder()
+    com.github.scribejava.core.model.Response userResponse = userRequest.send();
+    if (!userResponse.isSuccessful()) {
+      throw new IllegalStateException(format("Fail to authenticate the user. Error code is %s, Body of the response is %s",
+        userResponse.getCode(), userResponse.getBody()));
+    }
+    String userResponseBody = userResponse.getBody();
+    LOGGER.trace("User response received : %s", userResponseBody);
+    GsonUser gsonUser = GsonUser.parse(userResponseBody);
+
+    UserIdentity userIdentity = UserIdentity.builder()
       .setProviderLogin(gsonUser.getLogin())
       .setLogin(getLogin(gsonUser))
       .setName(getName(gsonUser))
-      .setEmail(gsonUser.getEmail());
-
-    if (settings.syncGroups()) {
-      List<GsonTeams.GsonTeam> teams = getTeams(scribe, accessToken);
-      builder.setGroups(from(teams).transform(TeamToGroup.INSTANCE).toSet());
-    }
-
-    context.authenticate(builder.build());
+      .setEmail(gsonUser.getEmail())
+      .build();
+    context.authenticate(userIdentity);
     context.redirectToRequestedPage();
-  }
-
-  private static GsonUser getUser(OAuthService scribe, Token accessToken) {
-    String responseBody = executeRequest("https://api.github.com/user", scribe, accessToken);
-    LOGGER.trace("User response received : {}", responseBody);
-    return GsonUser.parse(responseBody);
-  }
-
-  private static List<GsonTeams.GsonTeam> getTeams(OAuthService scribe, Token accessToken) {
-    String responseBody = executeRequest("https://api.github.com/user/teams", scribe, accessToken);
-    LOGGER.trace("Teams response received : {}", responseBody);
-    return GsonTeams.parse(responseBody);
-  }
-
-  private static String executeRequest(String requestUrl, OAuthService scribe, Token accessToken) {
-    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
-    scribe.signRequest(accessToken, request);
-
-    com.github.scribejava.core.model.Response response = request.send();
-    if (!response.isSuccessful()) {
-      throw new IllegalStateException(format("Fail to execute request '%s'. Error code is %s, Body of the response is %s",
-        requestUrl, response.getCode(), response.getBody()));
-    }
-    return response.getBody();
   }
 
   private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
@@ -176,14 +153,4 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   private String generateUniqueLogin(GsonUser gsonUser) {
     return getKey() + "@" + gsonUser.getLogin();
   }
-
-  private enum TeamToGroup implements Function<GsonTeams.GsonTeam, String> {
-    INSTANCE;
-
-    @Override
-    public String apply(@Nonnull GsonTeams.GsonTeam gsonTeam) {
-      return gsonTeam.getOrganizationId() + "/" + gsonTeam.getId();
-    }
-  }
-
 }
