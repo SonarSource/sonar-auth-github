@@ -83,11 +83,15 @@ public class GitHubSettings {
     return settings.getBoolean(GROUPS_SYNC);
   }
 
-  public String webURL(){
+  public String webURL() {
+    // TODO fail if null
+    // TODO add missing end slash
     return settings.getString(WEB_URL);
   }
 
-  public String apiURL(){
+  public String apiURL() {
+    // TODO fail if null
+    //TODO add missing end slash
     return settings.getString(API_URL);
   }
 
@@ -158,7 +162,8 @@ public class GitHubSettings {
         .build(),
       PropertyDefinition.builder(WEB_URL)
         .name("The WEB url for a GitHub instance.")
-        .description("The WEB url for a GitHub instance. https://github.com/ for github.com, https://github.company.com/ when using Github Enterprise")
+        .description("The WEB url for a GitHub instance. " +
+          "https://github.com/ for github.com, https://github.company.com/ when using GitHub Enterprise.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .type(STRING)
