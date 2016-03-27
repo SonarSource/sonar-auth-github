@@ -57,7 +57,7 @@ public class IntegrationTest {
   GitHubSettings gitHubSettings = new GitHubSettings(settings);
   UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
   ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
+  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory);
 
   @Before
   public void enable() {

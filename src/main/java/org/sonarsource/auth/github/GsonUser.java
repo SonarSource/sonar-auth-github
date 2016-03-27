@@ -32,7 +32,9 @@ public class GsonUser {
   private String email;
 
   public GsonUser() {
-    // required for Gson
+    // even if empty constructor is not required for Gson, it is strongly
+    // recommended:
+    // http://stackoverflow.com/a/18645370/229031
   }
 
   public GsonUser(String login, @Nullable String name, String email) {

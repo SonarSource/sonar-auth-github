@@ -147,7 +147,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       throw new IllegalStateException("GitHub authentication is disabled");
     }
     return new ServiceBuilder()
-      .provider(new GithubWithConfigurableURL(settings))
+      .provider(new ScribeGitHubApi(settings))
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
