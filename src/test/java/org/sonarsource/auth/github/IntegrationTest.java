@@ -23,9 +23,12 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -56,6 +59,28 @@ public class IntegrationTest {
   ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
   GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
 
+  @Before
+  public void enable() {
+    settings.setProperty("sonar.auth.github.clientId.secured", "the_id");
+    settings.setProperty("sonar.auth.github.clientSecret.secured", "the_secret");
+    settings.setProperty("sonar.auth.github.enabled", true);
+    settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+  }
+
+  /**
+   * First phase: SonarQube redirects browser to GitHub authentication form, requesting the
+   * minimal access rights ("scope") to get user profile (login, name, email and others).
+   */
+  @Test
+  public void redirect_browser_to_github_authentication_form() throws Exception {
+    DumbInitContext context = new DumbInitContext("the-csrf-state");
+    underTest.init(context);
+    assertThat(context.redirectedTo)
+      .startsWith(github.url("login/oauth/authorize").toString())
+      .contains("scope=" + URLEncoder.encode("user:email", StandardCharsets.UTF_8.name()));
+  }
+
   /**
    * Second phase: GitHub redirects browser to SonarQube at /oauth/callback/github?code={the verifier code}.
    * This SonarQube web service sends two requests to GitHub:
@@ -66,9 +91,7 @@ public class IntegrationTest {
    */
   @Test
   public void callback_on_successful_authentication() throws IOException, InterruptedException {
-    enablePlugin();
-
-    github.enqueue(newAccessTokenResponse());
+    github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
     github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
 
@@ -93,9 +116,7 @@ public class IntegrationTest {
 
   @Test
   public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
-    enablePlugin();
-
-    github.enqueue(newAccessTokenResponse());
+    github.enqueue(newSuccessfulAccessTokenResponse());
     // api.github.com/user crashes
     github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
 
@@ -112,7 +133,7 @@ public class IntegrationTest {
   /**
    * Response sent by GitHub to SonarQube when generating an access token
    */
-  private static MockResponse newAccessTokenResponse() {
+  private static MockResponse newSuccessfulAccessTokenResponse() {
     // github does not return the standard JSON format but plain-text
     // see https://developer.github.com/v3/oauth/
     return new MockResponse().setBody("access_token=e72e16c7e42f292c6912e7710c838347ae178b4a&scope=user%2Cgist&token_type=bearer");
@@ -122,14 +143,6 @@ public class IntegrationTest {
     HttpServletRequest request = mock(HttpServletRequest.class);
     when(request.getParameter("code")).thenReturn(verifierCode);
     return request;
-  }
-
-  private void enablePlugin() {
-    settings.setProperty("sonar.auth.github.clientId.secured", "the_id");
-    settings.setProperty("sonar.auth.github.clientSecret.secured", "the_secret");
-    settings.setProperty("sonar.auth.github.enabled", true);
-    settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
-    settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
   }
 
   private static class DumbCallbackContext implements OAuth2IdentityProvider.CallbackContext {
@@ -170,6 +183,40 @@ public class IntegrationTest {
     @Override
     public HttpServletResponse getResponse() {
       throw new UnsupportedOperationException("not used");
+    }
+  }
+
+  private static class DumbInitContext implements OAuth2IdentityProvider.InitContext {
+    String redirectedTo = null;
+    private final String generatedCsrfState;
+
+    public DumbInitContext(String generatedCsrfState) {
+      this.generatedCsrfState = generatedCsrfState;
+    }
+
+    @Override
+    public String generateCsrfState() {
+      return generatedCsrfState;
+    }
+
+    @Override
+    public void redirectTo(String url) {
+      this.redirectedTo = url;
+    }
+
+    @Override
+    public String getCallbackUrl() {
+      return CALLBACK_URL;
+    }
+
+    @Override
+    public HttpServletRequest getRequest() {
+      return null;
+    }
+
+    @Override
+    public HttpServletResponse getResponse() {
+      return null;
     }
   }
 }
