@@ -20,6 +20,8 @@
 package org.sonarsource.auth.github;
 
 import com.google.gson.Gson;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * Lite representation of JSON response of GET https://api.github.com/user
@@ -29,31 +31,30 @@ public class GsonUser {
   private String name;
   private String email;
 
+  public GsonUser() {
+    // required for Gson
+  }
+
+  public GsonUser(String login, @Nullable String name, String email) {
+    this.login = login;
+    this.name = name;
+    this.email = email;
+  }
+
   public String getLogin() {
     return login;
   }
 
-  public GsonUser setLogin(String login) {
-    this.login = login;
-    return this;
-  }
-
+  /**
+   * Name is optional at GitHub
+   */
+  @CheckForNull
   public String getName() {
     return name;
   }
 
-  public GsonUser setName(String name) {
-    this.name = name;
-    return this;
-  }
-
   public String getEmail() {
     return email;
-  }
-
-  public GsonUser setEmail(String email) {
-    this.email = email;
-    return this;
   }
 
   public static GsonUser parse(String json) {

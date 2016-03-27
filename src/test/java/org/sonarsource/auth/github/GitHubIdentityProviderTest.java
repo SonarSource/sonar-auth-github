@@ -40,7 +40,8 @@ public class GitHubIdentityProviderTest {
 
   GitHubSettings githubSettings = new GitHubSettings(settings);
 
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(githubSettings);
+  UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
+  GitHubIdentityProvider underTest = new GitHubIdentityProvider(githubSettings, userIdentityFactory);
 
   @Test
   public void check_fields() throws Exception {
@@ -79,6 +80,7 @@ public class GitHubIdentityProviderTest {
   public void init_when_group_sync() throws Exception {
     setSettings(true);
     settings.setProperty("sonar.auth.github.groupsSync", "true");
+    settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
     when(context.generateCsrfState()).thenReturn("state");
     when(context.getCallbackUrl()).thenReturn("http://localhost/callback");
@@ -94,7 +96,7 @@ public class GitHubIdentityProviderTest {
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
 
     thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("GitHub Authentication is disabled");
+    thrown.expectMessage("GitHub authentication is disabled");
     underTest.init(context);
   }
 

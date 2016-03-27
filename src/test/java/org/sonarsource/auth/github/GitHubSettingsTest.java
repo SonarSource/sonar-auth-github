@@ -33,7 +33,7 @@ public class GitHubSettingsTest {
   GitHubSettings underTest = new GitHubSettings(settings);
 
   @Test
-  public void is_enabled() throws Exception {
+  public void is_enabled() {
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
     settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
@@ -46,7 +46,7 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void is_enabled_always_return_false_when_client_id_is_null() throws Exception {
+  public void is_enabled_always_return_false_when_client_id_is_null() {
     settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.clientId.secured", (String) null);
     settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
@@ -56,7 +56,7 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void is_enabled_always_return_false_when_client_secret_is_null() throws Exception {
+  public void is_enabled_always_return_false_when_client_secret_is_null() {
     settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", (String) null);
@@ -66,7 +66,7 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void is_enabled_always_return_false_when_login_strategy_is_null() throws Exception {
+  public void is_enabled_always_return_false_when_login_strategy_is_null() {
     settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
@@ -76,25 +76,25 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void return_client_id() throws Exception {
+  public void return_client_id() {
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     assertThat(underTest.clientId()).isEqualTo("id");
   }
 
   @Test
-  public void return_client_secret() throws Exception {
+  public void return_client_secret() {
     settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
     assertThat(underTest.clientSecret()).isEqualTo("secret");
   }
 
   @Test
-  public void return_login_strategy() throws Exception {
+  public void return_login_strategy() {
     settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_PROVIDER_ID);
     assertThat(underTest.loginStrategy()).isEqualTo(LOGIN_STRATEGY_PROVIDER_ID);
   }
 
   @Test
-  public void allow_users_to_sign_up() throws Exception {
+  public void allow_users_to_sign_up() {
     settings.setProperty("sonar.auth.github.allowUsersToSignUp", "true");
     assertThat(underTest.allowUsersToSignUp()).isTrue();
 
@@ -107,7 +107,7 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void sync_groups() throws Exception {
+  public void sync_groups() {
     settings.setProperty("sonar.auth.github.groupsSync", "true");
     assertThat(underTest.syncGroups()).isTrue();
 
@@ -120,7 +120,7 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void definitions() throws Exception {
+  public void definitions() {
     assertThat(GitHubSettings.definitions()).hasSize(8);
   }
 }

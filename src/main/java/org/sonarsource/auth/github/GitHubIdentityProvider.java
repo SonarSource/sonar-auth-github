@@ -25,9 +25,7 @@ import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
-import com.google.common.base.Function;
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
@@ -36,28 +34,26 @@ import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.FluentIterable.from;
 import static java.lang.String.format;
-import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
-import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
 
 @ServerSide
 public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
+  public static final String KEY = "github";
   private static final Logger LOGGER = Loggers.get(GitHubIdentityProvider.class);
-
   private static final Token EMPTY_TOKEN = null;
 
   private final GitHubSettings settings;
+  private final UserIdentityFactory userIdentityFactory;
 
-  public GitHubIdentityProvider(GitHubSettings settings) {
+  public GitHubIdentityProvider(GitHubSettings settings, UserIdentityFactory userIdentityFactory) {
     this.settings = settings;
+    this.userIdentityFactory = userIdentityFactory;
   }
 
   @Override
   public String getKey() {
-    return "github";
+    return KEY;
   }
 
   @Override
@@ -116,18 +112,9 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String userResponseBody = userResponse.getBody();
     LOGGER.trace("User response received : %s", userResponseBody);
 
-    UserIdentity.Builder builder = UserIdentity.builder()
-      .setProviderLogin(gsonUser.getLogin())
-      .setLogin(getLogin(gsonUser))
-      .setName(getName(gsonUser))
-      .setEmail(gsonUser.getEmail());
-
-    if (settings.syncGroups()) {
-      List<GsonTeams.GsonTeam> teams = getTeams(scribe, accessToken);
-      builder.setGroups(from(teams).transform(TeamToGroup.INSTANCE).toSet());
-    }
-
-    context.authenticate(builder.build());
+    UserIdentity userIdentity = userIdentityFactory.create(gsonUser,
+      settings.syncGroups() ? getTeams(scribe, accessToken) : null);
+    context.authenticate(userIdentity);
     context.redirectToRequestedPage();
   }
 
@@ -157,42 +144,13 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
   private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
     if (!isEnabled()) {
-      throw new IllegalStateException("GitHub Authentication is disabled");
+      throw new IllegalStateException("GitHub authentication is disabled");
     }
     return new ServiceBuilder()
       .provider(new GithubWithConfigurableURL(settings))
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
-  }
-
-  private String getLogin(GsonUser gsonUser) {
-    String loginStrategy = settings.loginStrategy();
-    if (LOGIN_STRATEGY_UNIQUE.equals(loginStrategy)) {
-      return generateUniqueLogin(gsonUser);
-    } else if (LOGIN_STRATEGY_PROVIDER_ID.equals(loginStrategy)) {
-      return gsonUser.getLogin();
-    } else {
-      throw new IllegalStateException(format("Login strategy not found : %s", loginStrategy));
-    }
-  }
-
-  private static String getName(GsonUser gsonUser) {
-    String name = gsonUser.getName();
-    return isNullOrEmpty(name) ? gsonUser.getLogin() : name;
-  }
-
-  private String generateUniqueLogin(GsonUser gsonUser) {
-    return gsonUser.getLogin() + "@" + getKey();
-  }
-
-  private enum TeamToGroup implements Function<GsonTeams.GsonTeam, String> {
-    INSTANCE;
-
-    @Override
-    public String apply(@Nonnull GsonTeams.GsonTeam gsonTeam) {
-      return gsonTeam.getOrganizationId() + "/" + gsonTeam.getId();
-    }
   }
 
 }

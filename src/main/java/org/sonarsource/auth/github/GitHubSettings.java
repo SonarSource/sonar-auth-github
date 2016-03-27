@@ -92,6 +92,7 @@ public class GitHubSettings {
   }
 
   public static List<PropertyDefinition> definitions() {
+    int index = 1;
     return Arrays.asList(
       PropertyDefinition.builder(ENABLED)
         .name("Enabled")
@@ -100,21 +101,21 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
         .defaultValue(valueOf(false))
-        .index(1)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_ID)
         .name("Client ID")
         .description("Client ID provided by GitHub when registering the application.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .index(2)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(CLIENT_SECRET)
         .name("Client Secret")
         .description("Client password provided by GitHub when registering the application.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
-        .index(3)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(ALLOW_USERS_TO_SIGN_UP)
         .name("Allow users to sign-up")
@@ -123,7 +124,7 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
         .defaultValue(valueOf(true))
-        .index(4)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(LOGIN_STRATEGY)
         .name("Login generation strategy")
@@ -135,7 +136,7 @@ public class GitHubSettings {
         .type(SINGLE_SELECT_LIST)
         .defaultValue(LOGIN_STRATEGY_DEFAULT_VALUE)
         .options(LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID)
-        .index(5)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(GROUPS_SYNC)
         .name("Synchronize teams as groups")
@@ -144,7 +145,7 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(BOOLEAN)
         .defaultValue(valueOf(false))
-        .index(6)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(API_URL)
         .name("The API url for a GitHub instance.")
@@ -153,7 +154,7 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(STRING)
         .defaultValue(valueOf("https://api.github.com/"))
-        .index(7)
+        .index(index++)
         .build(),
       PropertyDefinition.builder(WEB_URL)
         .name("The WEB url for a GitHub instance.")
@@ -162,7 +163,7 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(STRING)
         .defaultValue(valueOf("https://github.com/"))
-        .index(8)
+        .index(index++)
         .build()
       );
   }

@@ -19,6 +19,9 @@
  */
 package org.sonarsource.auth.github;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,23 +29,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GsonUserTest {
 
   @Test
-  public void test_getter_and_setter() throws Exception {
-    GsonUser underTest = new GsonUser()
-      .setLogin("john")
-      .setName("John")
-      .setEmail("john@email.com");
-
-    assertThat(underTest.getLogin()).isEqualTo("john");
-    assertThat(underTest.getName()).isEqualTo("John");
-    assertThat(underTest.getEmail()).isEqualTo("john@email.com");
+  public void parse_json() throws Exception {
+    try (InputStream json = getClass().getResourceAsStream("GsonUserTest/user.json")) {
+      GsonUser user = GsonUser.parse(IOUtils.toString(json, StandardCharsets.UTF_8.name()));
+      assertThat(user.getLogin()).isEqualTo("octocat");
+      assertThat(user.getName()).isEqualTo("monalisa octocat");
+      assertThat(user.getEmail()).isEqualTo("octocat@github.com");
+    }
   }
 
   @Test
-  public void parse_from_json() throws Exception {
-    GsonUser underTest = GsonUser.parse("{login:john, name:John, email:john@email.com}");
-
-    assertThat(underTest.getLogin()).isEqualTo("john");
-    assertThat(underTest.getName()).isEqualTo("John");
-    assertThat(underTest.getEmail()).isEqualTo("john@email.com");
+  public void name_can_be_null() {
+    GsonUser underTest = GsonUser.parse("{login:octocat, email:octocat@github.com}");
+    assertThat(underTest.getLogin()).isEqualTo("octocat");
+    assertThat(underTest.getName()).isNull();
   }
 }
