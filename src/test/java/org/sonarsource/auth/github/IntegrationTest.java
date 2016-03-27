@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
@@ -44,6 +45,9 @@ public class IntegrationTest {
 
   @Rule
   public MockWebServer github = new MockWebServer();
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   // load settings with default values
   Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
@@ -64,9 +68,7 @@ public class IntegrationTest {
   public void callback_on_successful_authentication() throws IOException, InterruptedException {
     enablePlugin();
 
-    // github does not return the standard JSON format but plain-text
-    // see https://developer.github.com/v3/oauth/
-    github.enqueue(new MockResponse().setBody("access_token=e72e16c7e42f292c6912e7710c838347ae178b4a&scope=user%2Cgist&token_type=bearer"));
+    github.enqueue(newAccessTokenResponse());
     // response of api.github.com/user
     github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
 
@@ -87,6 +89,33 @@ public class IntegrationTest {
       .contains("code=the-verifier-code");
     RecordedRequest profileGitHubRequest = github.takeRequest();
     assertThat(profileGitHubRequest.getPath()).startsWith("/user");
+  }
+
+  @Test
+  public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
+    enablePlugin();
+
+    github.enqueue(newAccessTokenResponse());
+    // api.github.com/user crashes
+    github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
+
+    DumbCallbackContext callbackContext = new DumbCallbackContext(newRequest("the-verifier-code"));
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("Can not get GitHub user profile. HTTP code: 500, response: {error}");
+    underTest.callback(callbackContext);
+
+    assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity).isNull();
+    assertThat(callbackContext.redirectedToRequestedPage.get()).isFalse();
+  }
+
+  /**
+   * Response sent by GitHub to SonarQube when generating an access token
+   */
+  private static MockResponse newAccessTokenResponse() {
+    // github does not return the standard JSON format but plain-text
+    // see https://developer.github.com/v3/oauth/
+    return new MockResponse().setBody("access_token=e72e16c7e42f292c6912e7710c838347ae178b4a&scope=user%2Cgist&token_type=bearer");
   }
 
   private static HttpServletRequest newRequest(String verifierCode) {

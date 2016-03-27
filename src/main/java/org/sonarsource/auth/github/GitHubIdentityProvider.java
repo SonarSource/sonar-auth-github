@@ -106,7 +106,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
     com.github.scribejava.core.model.Response userResponse = userRequest.send();
     if (!userResponse.isSuccessful()) {
-      throw new IllegalStateException(format("Fail to authenticate the user. Error code is %s, Body of the response is %s",
+      throw new IllegalStateException(format("Can not get GitHub user profile. HTTP code: %s, response: %s",
         userResponse.getCode(), userResponse.getBody()));
     }
     String userResponseBody = userResponse.getBody();
