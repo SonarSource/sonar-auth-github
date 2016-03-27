@@ -20,6 +20,7 @@
 package org.sonarsource.auth.github;
 
 import org.junit.Test;
+import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +29,7 @@ import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER
 
 public class GitHubSettingsTest {
 
-  Settings settings = new Settings();
+  Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
 
   GitHubSettings underTest = new GitHubSettings(settings);
 
@@ -61,16 +62,6 @@ public class GitHubSettingsTest {
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", (String) null);
     settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
-
-    assertThat(underTest.isEnabled()).isFalse();
-  }
-
-  @Test
-  public void is_enabled_always_return_false_when_login_strategy_is_null() {
-    settings.setProperty("sonar.auth.github.enabled", true);
-    settings.setProperty("sonar.auth.github.clientId.secured", "id");
-    settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
-    settings.setProperty("sonar.auth.github.loginStrategy", (String) null);
 
     assertThat(underTest.isEnabled()).isFalse();
   }
@@ -117,6 +108,25 @@ public class GitHubSettingsTest {
     // default value
     settings.setProperty("sonar.auth.github.groupsSync", (String) null);
     assertThat(underTest.syncGroups()).isFalse();
+  }
+
+  @Test
+  public void apiUrl_must_have_ending_slash() {
+    settings.setProperty("sonar.auth.github.apiUrl", "https://github.com");
+    assertThat(underTest.apiURL()).isEqualTo("https://github.com/");
+
+    settings.setProperty("sonar.auth.github.apiUrl", "https://github.com/");
+    assertThat(underTest.apiURL()).isEqualTo("https://github.com/");
+  }
+
+  @Test
+  public void webUrl_must_have_ending_slash() {
+    settings.setProperty("sonar.auth.github.webUrl", "https://github.com");
+    assertThat(underTest.webURL()).isEqualTo("https://github.com/");
+
+    settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
+    assertThat(underTest.webURL()).isEqualTo("https://github.com/");
+
   }
 
   @Test

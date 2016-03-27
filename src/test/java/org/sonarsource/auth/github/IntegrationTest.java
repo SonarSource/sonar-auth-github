@@ -128,8 +128,8 @@ public class IntegrationTest {
     settings.setProperty("sonar.auth.github.clientId.secured", "the_id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", "the_secret");
     settings.setProperty("sonar.auth.github.enabled", true);
-    settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d/", github.getHostName(), github.getPort()));
-    settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d/", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
   }
 
   private static class DumbCallbackContext implements OAuth2IdentityProvider.CallbackContext {

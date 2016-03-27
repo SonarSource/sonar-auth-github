@@ -22,10 +22,12 @@ package org.sonarsource.auth.github;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.ServerSide;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static org.sonar.api.PropertyType.BOOLEAN;
@@ -68,7 +70,7 @@ public class GitHubSettings {
   }
 
   public boolean isEnabled() {
-    return settings.getBoolean(ENABLED) && clientId() != null && clientSecret() != null && loginStrategy() != null;
+    return settings.getBoolean(ENABLED) && !isNullOrEmpty(clientId()) && !isNullOrEmpty(clientSecret());
   }
 
   public boolean allowUsersToSignUp() {
@@ -84,15 +86,18 @@ public class GitHubSettings {
   }
 
   public String webURL() {
-    // TODO fail if null
-    // TODO add missing end slash
-    return settings.getString(WEB_URL);
+    return urlWithEndingSlash(settings.getString(WEB_URL));
   }
 
   public String apiURL() {
-    // TODO fail if null
-    //TODO add missing end slash
-    return settings.getString(API_URL);
+    return urlWithEndingSlash(settings.getString(API_URL));
+  }
+
+  private static String urlWithEndingSlash(@Nullable String url) {
+    if (url != null && !url.endsWith("/")) {
+      return url + "/";
+    }
+    return url;
   }
 
   public static List<PropertyDefinition> definitions() {
