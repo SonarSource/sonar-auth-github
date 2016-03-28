@@ -45,10 +45,12 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
   private final GitHubSettings settings;
   private final UserIdentityFactory userIdentityFactory;
+  private final ScribeGitHubApi scribeApi;
 
-  public GitHubIdentityProvider(GitHubSettings settings, UserIdentityFactory userIdentityFactory) {
+  public GitHubIdentityProvider(GitHubSettings settings, UserIdentityFactory userIdentityFactory, ScribeGitHubApi scribeApi) {
     this.settings = settings;
     this.userIdentityFactory = userIdentityFactory;
+    this.scribeApi = scribeApi;
   }
 
   @Override
@@ -83,7 +85,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   @Override
   public void init(InitContext context) {
     String state = context.generateCsrfState();
-    OAuthService scribe = prepareScribe(context)
+    OAuthService scribe = newScribeBuilder(context)
       .scope(settings.syncGroups() ? "user:email,read:org" : "user:email")
       .state(state)
       .build();
@@ -96,24 +98,16 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     context.verifyCsrfState();
 
     HttpServletRequest request = context.getRequest();
-    OAuthService scribe = prepareScribe(context).build();
+    OAuthService scribe = newScribeBuilder(context).build();
     String oAuthVerifier = request.getParameter("code");
     Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
 
     OAuthRequest userRequest = new OAuthRequest(Verb.GET, settings.apiURL() + "user", scribe);
     scribe.signRequest(accessToken, userRequest);
-    GsonUser gsonUser = getUser(scribe, accessToken);
 
-    com.github.scribejava.core.model.Response userResponse = userRequest.send();
-    if (!userResponse.isSuccessful()) {
-      throw new IllegalStateException(format("Can not get GitHub user profile. HTTP code: %s, response: %s",
-        userResponse.getCode(), userResponse.getBody()));
-    }
-    String userResponseBody = userResponse.getBody();
-    LOGGER.trace("User response received : %s", userResponseBody);
-
-    UserIdentity userIdentity = userIdentityFactory.create(gsonUser,
+    UserIdentity userIdentity = userIdentityFactory.create(getUser(scribe, accessToken),
       settings.syncGroups() ? getTeams(scribe, accessToken) : null);
+
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
   }
@@ -142,15 +136,14 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return response.getBody();
   }
 
-  private ServiceBuilder prepareScribe(OAuth2IdentityProvider.OAuth2Context context) {
+  private ServiceBuilder newScribeBuilder(OAuth2IdentityProvider.OAuth2Context context) {
     if (!isEnabled()) {
       throw new IllegalStateException("GitHub authentication is disabled");
     }
     return new ServiceBuilder()
-      .provider(new ScribeGitHubApi(settings))
+      .provider(scribeApi)
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
   }
-
 }

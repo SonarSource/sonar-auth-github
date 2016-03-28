@@ -33,6 +33,9 @@ import static java.lang.String.format;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
 
+/**
+ * Converts GitHub JSON response to {@link UserIdentity}
+ */
 @ServerSide
 public class UserIdentityFactory {
 

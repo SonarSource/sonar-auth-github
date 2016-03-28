@@ -126,7 +126,6 @@ public class GitHubSettingsTest {
 
     settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
     assertThat(underTest.webURL()).isEqualTo("https://github.com/");
-
   }
 
   @Test
