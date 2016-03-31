@@ -12,6 +12,7 @@
   <version>1.2-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
   <name>GitHub Authentication for SonarQube</name>
+  <description>GitHub Authentication for SonarQube</description>
   <inceptionYear>2016</inceptionYear>
 
   <properties>
