@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Lite representation of JSON response of GET https://api.github.com/user/orgs
+ * Lite representation of JSON response of GET https://api.github.com/user/teams
  */
 public class GsonTeams {
 
@@ -45,6 +45,11 @@ public class GsonTeams {
     private String slug;
     private GsonOrganization organization;
 
+    public GsonTeam(String slug, GsonOrganization organization) {
+      this.slug = slug;
+      this.organization = organization;
+    }
+
     public String getId() {
       return slug;
     }
@@ -56,5 +61,9 @@ public class GsonTeams {
 
   public static class GsonOrganization {
     private String login;
+
+    public GsonOrganization(String login) {
+      this.login = login;
+    }
   }
 }

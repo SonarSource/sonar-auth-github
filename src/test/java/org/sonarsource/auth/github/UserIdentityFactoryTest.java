@@ -19,6 +19,8 @@
  */
 package org.sonarsource.auth.github;
 
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,6 +49,17 @@ public class UserIdentityFactoryTest {
     assertThat(identity.getLogin()).isEqualTo("octocat");
     assertThat(identity.getName()).isEqualTo("monalisa octocat");
     assertThat(identity.getEmail()).isEqualTo("octocat@github.com");
+  }
+
+  @Test
+  public void create_for_provider_strategy_with_teams() {
+    GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
+    List<GsonTeams.GsonTeam> teams = Arrays.asList(
+      new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource"))
+    );
+    settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+    UserIdentity identity = underTest.create(gson, teams);
+    assertThat(identity.getGroups()).containsOnly("SonarSource/developers");
   }
 
   @Test

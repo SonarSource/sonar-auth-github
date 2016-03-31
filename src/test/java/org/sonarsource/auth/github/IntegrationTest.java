@@ -57,7 +57,7 @@ public class IntegrationTest {
   GitHubSettings gitHubSettings = new GitHubSettings(settings);
   UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
   ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory);
+  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
 
   @Before
   public void enable() {
@@ -115,6 +115,40 @@ public class IntegrationTest {
   }
 
   @Test
+  public void redirect_browser_to_github_authentication_form_with_group_sync() throws Exception {
+    settings.setProperty("sonar.auth.github.groupsSync", true);
+    DumbInitContext context = new DumbInitContext("the-csrf-state");
+    underTest.init(context);
+    assertThat(context.redirectedTo)
+      .startsWith(github.url("login/oauth/authorize").toString())
+      .contains("scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()));
+  }
+
+  @Test
+  public void callback_on_successful_authentication_with_group_sync() throws IOException, InterruptedException {
+    settings.setProperty("sonar.auth.github.groupsSync", true);
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // response of api.github.com/user/teams
+    github.enqueue(new MockResponse().setBody("[\n" +
+      "  {\n" +
+      "    \"slug\": \"developers\",\n" +
+      "    \"organization\": {\n" +
+      "      \"login\": \"SonarSource\"\n" +
+      "    }\n" +
+      "  }\n" +
+      "]"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    underTest.callback(callbackContext);
+
+    assertThat(callbackContext.userIdentity.getGroups()).containsOnly("SonarSource/developers");
+  }
+
+  @Test
   public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // api.github.com/user crashes
@@ -122,7 +156,8 @@ public class IntegrationTest {
 
     DumbCallbackContext callbackContext = new DumbCallbackContext(newRequest("the-verifier-code"));
     expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Can not get GitHub user profile. HTTP code: 500, response: {error}");
+    expectedException.expectMessage("Fail to execute request");
+    expectedException.expectMessage("HTTP code: 500, response: {error}");
     underTest.callback(callbackContext);
 
     assertThat(callbackContext.csrfStateVerified.get()).isTrue();

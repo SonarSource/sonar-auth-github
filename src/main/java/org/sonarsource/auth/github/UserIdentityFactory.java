@@ -21,7 +21,6 @@ package org.sonarsource.auth.github;
 
 import com.google.common.base.Function;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.sonar.api.server.ServerSide;

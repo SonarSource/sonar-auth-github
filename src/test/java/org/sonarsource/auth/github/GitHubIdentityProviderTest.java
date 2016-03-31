@@ -37,11 +37,10 @@ public class GitHubIdentityProviderTest {
   public ExpectedException thrown = ExpectedException.none();
 
   Settings settings = new Settings();
-
-  GitHubSettings githubSettings = new GitHubSettings(settings);
-
+  GitHubSettings gitHubSettings = new GitHubSettings(settings);
   UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(githubSettings, userIdentityFactory);
+  ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
+  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
 
   @Test
   public void check_fields() throws Exception {

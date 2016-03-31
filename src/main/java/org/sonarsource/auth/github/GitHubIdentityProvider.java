@@ -112,14 +112,14 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     context.redirectToRequestedPage();
   }
 
-  private static GsonUser getUser(OAuthService scribe, Token accessToken) {
-    String responseBody = executeRequest("https://api.github.com/user", scribe, accessToken);
+  private GsonUser getUser(OAuthService scribe, Token accessToken) {
+    String responseBody = executeRequest(settings.apiURL() + "user", scribe, accessToken);
     LOGGER.trace("User response received : {}", responseBody);
     return GsonUser.parse(responseBody);
   }
 
-  private static List<GsonTeams.GsonTeam> getTeams(OAuthService scribe, Token accessToken) {
-    String responseBody = executeRequest("https://api.github.com/user/teams", scribe, accessToken);
+  private List<GsonTeams.GsonTeam> getTeams(OAuthService scribe, Token accessToken) {
+    String responseBody = executeRequest(settings.apiURL() + "user/teams", scribe, accessToken);
     LOGGER.trace("Teams response received : {}", responseBody);
     return GsonTeams.parse(responseBody);
   }
@@ -130,7 +130,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
     com.github.scribejava.core.model.Response response = request.send();
     if (!response.isSuccessful()) {
-      throw new IllegalStateException(format("Fail to execute request '%s'. Error code is %s, Body of the response is %s",
+      throw new IllegalStateException(format("Fail to execute request '%s'. HTTP code: %s, response: %s",
         requestUrl, response.getCode(), response.getBody()));
     }
     return response.getBody();

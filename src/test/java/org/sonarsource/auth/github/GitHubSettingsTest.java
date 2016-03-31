@@ -94,7 +94,7 @@ public class GitHubSettingsTest {
 
     // default value
     settings.setProperty("sonar.auth.github.allowUsersToSignUp", (String) null);
-    assertThat(underTest.allowUsersToSignUp()).isFalse();
+    assertThat(underTest.allowUsersToSignUp()).isTrue();
   }
 
   @Test

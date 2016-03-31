@@ -30,6 +30,7 @@ public class AuthGitHubPlugin extends SonarPlugin {
     extensions.add(GitHubIdentityProvider.class);
     extensions.add(GitHubSettings.class);
     extensions.add(UserIdentityFactory.class);
+    extensions.add(ScribeGitHubApi.class);
     extensions.addAll(GitHubSettings.definitions());
     return extensions;
   }
