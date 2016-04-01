@@ -72,7 +72,7 @@ public class UserIdentityFactory {
     return isNullOrEmpty(name) ? gson.getLogin() : name;
   }
 
-  private String generateUniqueLogin(GsonUser gsonUser) {
+  private static String generateUniqueLogin(GsonUser gsonUser) {
     return format("%s@%s", gsonUser.getLogin(), GitHubIdentityProvider.KEY);
   }
 

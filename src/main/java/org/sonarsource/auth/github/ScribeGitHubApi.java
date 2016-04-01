@@ -48,9 +48,7 @@ public class ScribeGitHubApi extends DefaultApi20 {
       .append("&redirect_uri=").append(encode(config.getCallback()))
       .append("&scope=").append(encode(config.getScope()));
     String state = config.getState();
-    if (state != null) {
-      sb.append("&state=").append(encode(state));
-    }
+    sb.append("&state=").append(encode(state));
     return sb.toString();
   }
 }
