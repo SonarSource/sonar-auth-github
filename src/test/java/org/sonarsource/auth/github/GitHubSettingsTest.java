@@ -19,6 +19,9 @@
  */
 package org.sonarsource.auth.github;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
@@ -129,9 +132,30 @@ public class GitHubSettingsTest {
   }
 
   @Test
-  public void return_organizations() {
-    settings.setProperty("sonar.auth.github.organizations", "example");
-    assertThat(underTest.organizations()).isEqualTo("example");
+  public void return_organizations_single() {
+    String setting = "example";
+    settings.setProperty("sonar.auth.github.organizations", setting);
+    List<String> expected = Arrays.asList(setting);
+    List<String> actual = underTest.organizations();
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void return_organizations_multiple() {
+    String setting = "example0,example1";
+    settings.setProperty("sonar.auth.github.organizations", setting);
+    List<String> expected = Arrays.asList(setting.split("\\s*,\\s*"));
+    List<String> actual = underTest.organizations();
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void return_organizations_empty_list() {
+    String setting = "";
+    settings.setProperty("sonar.auth.github.organizations", setting);
+    List<String> expected = new ArrayList<String>();
+    List<String> actual = underTest.organizations();
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
