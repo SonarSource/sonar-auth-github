@@ -98,7 +98,7 @@ public class GitHubSettings {
 
   public List<String> organizations() {
     String setting = settings.getString(ORGANIZATIONS);
-    return (isNullOrEmpty(setting)) ? new ArrayList<String>() : Arrays.asList(setting.split("\\s*,\\s*"));
+    return isNullOrEmpty(setting) ? new ArrayList<String>() : Arrays.asList(setting.split("\\s*,\\s*"));
   }
 
   private static String urlWithEndingSlash(@Nullable String url) {
