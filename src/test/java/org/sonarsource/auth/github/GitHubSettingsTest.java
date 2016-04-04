@@ -129,7 +129,13 @@ public class GitHubSettingsTest {
   }
 
   @Test
+  public void return_organizations() {
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    assertThat(underTest.organizations()).isEqualTo("example");
+  }
+
+  @Test
   public void definitions() {
-    assertThat(GitHubSettings.definitions()).hasSize(8);
+    assertThat(GitHubSettings.definitions()).hasSize(9);
   }
 }

@@ -29,6 +29,6 @@ public class AuthGitHubPluginTest {
 
   @Test
   public void test_extensions() throws Exception {
-    assertThat(underTest.getExtensions()).hasSize(12);
+    assertThat(underTest.getExtensions()).hasSize(13);
   }
 }
