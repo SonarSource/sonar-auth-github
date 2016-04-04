@@ -50,6 +50,8 @@ public class GitHubSettings {
   public static final String LOGIN_STRATEGY_PROVIDER_ID = "Same as GitHub login";
   public static final String LOGIN_STRATEGY_DEFAULT_VALUE = LOGIN_STRATEGY_UNIQUE;
 
+  public static final String ORGANIZATIONS = "sonar.auth.github.organizations";
+
   public static final String CATEGORY = "github";
   public static final String SUBCATEGORY = "authentication";
 
@@ -92,6 +94,8 @@ public class GitHubSettings {
   public String apiURL() {
     return urlWithEndingSlash(settings.getString(API_URL));
   }
+
+  public String organizations() { return settings.getString(ORGANIZATIONS); }
 
   private static String urlWithEndingSlash(@Nullable String url) {
     if (url != null && !url.endsWith("/")) {
@@ -173,6 +177,14 @@ public class GitHubSettings {
         .subCategory(SUBCATEGORY)
         .type(STRING)
         .defaultValue(valueOf("https://github.com/"))
+        .index(index++)
+        .build(),
+      PropertyDefinition.builder(ORGANIZATIONS)
+        .name("Organizations")
+        .description("Only members of these organizations will be able to authenticate to the server. " +
+          "Specify multiple organizations as a comma separated list.")
+        .category(CATEGORY)
+        .subCategory(SUBCATEGORY)
         .index(index++)
         .build()
       );
