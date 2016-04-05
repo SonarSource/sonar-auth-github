@@ -149,6 +149,53 @@ public class IntegrationTest {
   }
 
   @Test
+  public void redirect_browser_to_github_authentication_form_with_organizations() throws Exception {
+    settings.setProperty("sonar.auth.github.organizations", "example0, example1");
+    DumbInitContext context = new DumbInitContext("the-csrf-state");
+    underTest.init(context);
+    assertThat(context.redirectedTo)
+            .startsWith(github.url("login/oauth/authorize").toString())
+            .contains("scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()));
+  }
+
+  @Test
+  public void callback_on_successful_authentication_with_organizations_with_membership() throws IOException, InterruptedException {
+    settings.setProperty("sonar.auth.github.organizations", "example0, example1");
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // response of api.github.com/orgs/example0/members/user
+    github.enqueue(new MockResponse().setResponseCode(204));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    underTest.callback(callbackContext);
+
+    assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity).isNotNull();
+    assertThat(callbackContext.redirectedToRequestedPage.get()).isTrue();
+  }
+
+  @Test
+  public void callback_on_successful_authentication_with_organizations_without_membership() throws IOException, InterruptedException {
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    settings.setProperty("sonar.auth.github.loginStrategy", GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // response of api.github.com/orgs/example0/members/user
+    github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
+    underTest.callback(callbackContext);
+  }
+
+  @Test
   public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // api.github.com/user crashes

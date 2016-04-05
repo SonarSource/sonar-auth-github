@@ -26,6 +26,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
 import com.google.common.base.Joiner;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
@@ -149,9 +150,16 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
   /**
    * Check to see that login is a member of organization.
-   * https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member
+   *
+   * A 204 response code indicates organization membership.  302 and 404 codes are not treated as exceptional,
+   * they indicate various ways in which a login is not a member of the organization.
+   *
+   * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
   private boolean isOrganizationMember(Token accessToken, String organization, String login) {
+    int membership_code = 204;
+    List<Integer> unexceptional_codes = Arrays.asList(membership_code, 302, 404);
+
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
     OAuthService scribe = new ServiceBuilder()
             .provider(scribeApi)
@@ -162,14 +170,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     scribe.signRequest(accessToken, request);
 
     com.github.scribejava.core.model.Response response = request.send();
-    if (!response.isSuccessful()) {
+    int code = response.getCode();
+    if (!unexceptional_codes.contains(code)) {
       throw new IllegalStateException(format("Fail to execute request '%s'. " +
-        "Error code is %s, Body of the response is %s", requestUrl, response.getCode(), response.getBody()));
+        "Error code is %s, Body of the response is %s", requestUrl, code, response.getBody()));
     }
 
-    LOGGER.trace("Orgs response received : {}", response.getCode());
+    LOGGER.trace("Orgs response received : {}", code);
 
-    return response.getCode() == 204;
+    return code == membership_code;
   }
 
   private static String executeRequest(String requestUrl, OAuthService scribe, Token accessToken) {
