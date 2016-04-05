@@ -196,6 +196,24 @@ public class IntegrationTest {
   }
 
   @Test
+  public void callback_on_successful_authentication_with_organizations_without_membership_with_unique_login_strategy() throws IOException, InterruptedException {
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    settings.setProperty("sonar.auth.github.loginStrategy", GitHubSettings.LOGIN_STRATEGY_UNIQUE);
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // response of api.github.com/orgs/example0/members/user
+    github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
+    underTest.callback(callbackContext);
+  }
+
+  @Test
   public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // api.github.com/user crashes
