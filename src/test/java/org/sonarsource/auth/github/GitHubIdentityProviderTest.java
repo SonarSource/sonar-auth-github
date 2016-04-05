@@ -90,6 +90,20 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
+  public void init_when_organizations() throws Exception {
+    setSettings(true);
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
+    OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
+    when(context.generateCsrfState()).thenReturn("state");
+    when(context.getCallbackUrl()).thenReturn("http://localhost/callback");
+
+    underTest.init(context);
+
+    verify(context).redirectTo("https://github.com/login/oauth/authorize?client_id=id&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail%2Cread%3Aorg&state=state");
+  }
+
+  @Test
   public void fail_to_init_when_disabled() throws Exception {
     setSettings(false);
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
@@ -118,6 +132,22 @@ public class GitHubIdentityProviderTest {
     settings.setProperty("sonar.auth.github.groupsSync", true);
     settings.setProperty("sonar.auth.github.organizations", "example");
     assertThat(underTest.getScope()).isEqualTo("user:email,read:org");
+  }
+
+  @Test
+  public void organization_membership_required() {
+    setSettings(true);
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    assertThat(underTest.isOrganizationMembershipRequired()).isTrue();
+    settings.setProperty("sonar.auth.github.organizations", "example0, example1");
+    assertThat(underTest.isOrganizationMembershipRequired()).isTrue();
+  }
+
+  @Test
+  public void organization_membership_not_required() {
+    setSettings(true);
+    settings.setProperty("sonar.auth.github.organizations", "");
+    assertThat(underTest.isOrganizationMembershipRequired()).isFalse();
   }
 
   private void setSettings(boolean enabled) {
