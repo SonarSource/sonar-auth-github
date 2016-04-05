@@ -25,6 +25,7 @@ import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
+import com.google.common.base.Joiner;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
@@ -112,6 +113,11 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     UserIdentity userIdentity = userIdentityFactory.create(getUser(scribe, accessToken),
       settings.syncGroups() ? getTeams(scribe, accessToken) : null);
 
+    if (isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, userIdentity.getLogin())) {
+      throw new IllegalStateException(format("'%s' must be a member of at least one organization: '%s'",
+        userIdentity.getLogin(), Joiner.on(", ").join(settings.organizations())));
+    }
+
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
   }
@@ -126,6 +132,44 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String responseBody = executeRequest(settings.apiURL() + "user/teams", scribe, accessToken);
     LOGGER.trace("Teams response received : {}", responseBody);
     return GsonTeams.parse(responseBody);
+  }
+
+  public boolean isOrganizationMembershipRequired() {
+    return !settings.organizations().isEmpty();
+  }
+
+  private boolean isOrganizationsMember(Token accessToken, String login) {
+    for (String organization : settings.organizations()) {
+      if (isOrganizationMember(accessToken, organization, login)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check to see that login is a member of organization.
+   * https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member
+   */
+  private boolean isOrganizationMember(Token accessToken, String organization, String login) {
+    String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
+    OAuthService scribe = new ServiceBuilder()
+            .provider(scribeApi)
+            .apiKey(settings.clientId())
+            .apiSecret(settings.clientSecret())
+            .build();
+    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
+    scribe.signRequest(accessToken, request);
+
+    com.github.scribejava.core.model.Response response = request.send();
+    if (!response.isSuccessful()) {
+      throw new IllegalStateException(format("Fail to execute request '%s'. " +
+        "Error code is %s, Body of the response is %s", requestUrl, response.getCode(), response.getBody()));
+    }
+
+    LOGGER.trace("Orgs response received : {}", response.getCode());
+
+    return response.getCode() == 204;
   }
 
   private static String executeRequest(String requestUrl, OAuthService scribe, Token accessToken) {
