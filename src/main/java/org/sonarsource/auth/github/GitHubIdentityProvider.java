@@ -111,14 +111,14 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     OAuthRequest userRequest = new OAuthRequest(Verb.GET, settings.apiURL() + "user", scribe);
     scribe.signRequest(accessToken, userRequest);
 
-    UserIdentity userIdentity = userIdentityFactory.create(getUser(scribe, accessToken),
-      settings.syncGroups() ? getTeams(scribe, accessToken) : null);
-
-    if (isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, userIdentity.getLogin())) {
+    GsonUser user = getUser(scribe, accessToken);
+    if (isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, user.getLogin())) {
       throw new IllegalStateException(format("'%s' must be a member of at least one organization: '%s'",
-        userIdentity.getLogin(), Joiner.on(", ").join(settings.organizations())));
+        user.getLogin(), Joiner.on(", ").join(settings.organizations())));
     }
 
+    UserIdentity userIdentity = userIdentityFactory.create(user,
+      settings.syncGroups() ? getTeams(scribe, accessToken) : null);
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
   }
