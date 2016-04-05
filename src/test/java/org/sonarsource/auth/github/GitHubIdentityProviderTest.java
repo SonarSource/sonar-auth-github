@@ -99,6 +99,27 @@ public class GitHubIdentityProviderTest {
     underTest.init(context);
   }
 
+  @Test
+  public void scope_includes_org_when_necessary() {
+    setSettings(false);
+
+    settings.setProperty("sonar.auth.github.groupsSync", false);
+    settings.setProperty("sonar.auth.github.organizations", "");
+    assertThat(underTest.getScope()).isEqualTo("user:email");
+
+    settings.setProperty("sonar.auth.github.groupsSync", true);
+    settings.setProperty("sonar.auth.github.organizations", "");
+    assertThat(underTest.getScope()).isEqualTo("user:email,read:org");
+
+    settings.setProperty("sonar.auth.github.groupsSync", false);
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    assertThat(underTest.getScope()).isEqualTo("user:email,read:org");
+
+    settings.setProperty("sonar.auth.github.groupsSync", true);
+    settings.setProperty("sonar.auth.github.organizations", "example");
+    assertThat(underTest.getScope()).isEqualTo("user:email,read:org");
+  }
+
   private void setSettings(boolean enabled) {
     if (enabled) {
       settings.setProperty("sonar.auth.github.clientId.secured", "id");

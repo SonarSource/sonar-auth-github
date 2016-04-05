@@ -86,11 +86,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   public void init(InitContext context) {
     String state = context.generateCsrfState();
     OAuthService scribe = newScribeBuilder(context)
-      .scope(settings.syncGroups() ? "user:email,read:org" : "user:email")
+      .scope(getScope())
       .state(state)
       .build();
     String url = scribe.getAuthorizationUrl(EMPTY_TOKEN);
     context.redirectTo(url);
+  }
+
+  public String getScope() {
+    return (settings.syncGroups() || !settings.organizations().isEmpty()) ? "user:email,read:org" : "user:email";
   }
 
   @Override
