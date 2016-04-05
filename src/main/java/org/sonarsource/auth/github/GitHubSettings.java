@@ -186,7 +186,8 @@ public class GitHubSettings {
       PropertyDefinition.builder(ORGANIZATIONS)
         .name("Organizations")
         .description("Only members of these organizations will be able to authenticate to the server. " +
-          "Specify multiple organizations as a comma separated list.")
+          "Specify multiple organizations as a comma separated list. " +
+          "If a user is a member of any of the organizations listed they will be authenticated.")
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)
