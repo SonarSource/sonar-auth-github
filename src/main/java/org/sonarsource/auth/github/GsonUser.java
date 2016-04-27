@@ -37,7 +37,7 @@ public class GsonUser {
     // http://stackoverflow.com/a/18645370/229031
   }
 
-  public GsonUser(String login, @Nullable String name, String email) {
+  public GsonUser(String login, @Nullable String name, @Nullable String email) {
     this.login = login;
     this.name = name;
     this.email = email;
@@ -55,6 +55,10 @@ public class GsonUser {
     return name;
   }
 
+  /**
+   * Name is optional at GitHub
+   */
+  @CheckForNull
   public String getEmail() {
     return email;
   }
