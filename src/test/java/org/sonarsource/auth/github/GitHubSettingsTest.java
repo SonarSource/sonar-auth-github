@@ -135,8 +135,8 @@ public class GitHubSettingsTest {
   public void return_organizations_single() {
     String setting = "example";
     settings.setProperty("sonar.auth.github.organizations", setting);
-    List<String> expected = Arrays.asList(setting);
-    List<String> actual = underTest.organizations();
+    String[] expected = new String[]{"example"};
+    String[] actual = underTest.organizations();
     assertThat(actual).isEqualTo(expected);
   }
 
@@ -144,17 +144,17 @@ public class GitHubSettingsTest {
   public void return_organizations_multiple() {
     String setting = "example0,example1";
     settings.setProperty("sonar.auth.github.organizations", setting);
-    List<String> expected = Arrays.asList(setting.split("\\s*,\\s*"));
-    List<String> actual = underTest.organizations();
+    String[] expected = new String[]{"example0", "example1"};
+    String[] actual = underTest.organizations();
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void return_organizations_empty_list() {
-    String setting = "";
+    String[] setting = null;
     settings.setProperty("sonar.auth.github.organizations", setting);
-    List<String> expected = new ArrayList<String>();
-    List<String> actual = underTest.organizations();
+    String[] expected = new String[]{};
+    String[] actual = underTest.organizations();
     assertThat(actual).isEqualTo(expected);
   }
 
