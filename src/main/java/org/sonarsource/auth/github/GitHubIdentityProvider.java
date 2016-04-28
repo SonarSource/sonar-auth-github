@@ -26,12 +26,14 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
 import com.google.common.base.Joiner;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
+import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -96,7 +98,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   }
 
   public String getScope() {
-    return (settings.syncGroups() || !settings.organizations().isEmpty()) ? "user:email,read:org" : "user:email";
+    return (settings.syncGroups() || isOrganizationMembershipRequired()) ? "user:email,read:org" : "user:email";
   }
 
   @Override
@@ -112,8 +114,8 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     scribe.signRequest(accessToken, userRequest);
 
     GsonUser user = getUser(scribe, accessToken);
-    if (isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, user.getLogin())) {
-      throw new IllegalStateException(format("'%s' must be a member of at least one organization: '%s'",
+    if (isUnauthorized(accessToken, user.getLogin())) {
+      throw new UnauthorizedException(format("'%s' must be a member of at least one organization: '%s'",
         user.getLogin(), Joiner.on(", ").join(settings.organizations())));
     }
 
@@ -135,9 +137,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return GsonTeams.parse(responseBody);
   }
 
-  public boolean isOrganizationMembershipRequired() {
-    return !settings.organizations().isEmpty();
-  }
+  public boolean isOrganizationMembershipRequired() { return settings.organizations().length > 0; }
 
   private boolean isOrganizationsMember(Token accessToken, String login) {
     for (String organization : settings.organizations()) {
@@ -146,6 +146,10 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       }
     }
     return false;
+  }
+
+  private boolean isUnauthorized(Token accessToken, String login) {
+    return isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, login);
   }
 
   /**
@@ -157,8 +161,8 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
   private boolean isOrganizationMember(Token accessToken, String organization, String login) {
-    int membership_code = 204;
-    List<Integer> unexceptional_codes = Arrays.asList(membership_code, 302, 404);
+    int membership_code = java.net.HttpURLConnection.HTTP_NO_CONTENT;
+    List<Integer> unexceptional_codes = Arrays.asList(membership_code, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_NOT_FOUND);
 
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
     OAuthService scribe = new ServiceBuilder()

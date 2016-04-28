@@ -19,7 +19,6 @@
  */
 package org.sonarsource.auth.github;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
@@ -96,10 +95,7 @@ public class GitHubSettings {
     return urlWithEndingSlash(settings.getString(API_URL));
   }
 
-  public List<String> organizations() {
-    String setting = settings.getString(ORGANIZATIONS);
-    return isNullOrEmpty(setting) ? new ArrayList<String>() : Arrays.asList(setting.split("\\s*,\\s*"));
-  }
+  public String[] organizations() { return settings.getStringArray(ORGANIZATIONS); }
 
   private static String urlWithEndingSlash(@Nullable String url) {
     if (url != null && !url.endsWith("/")) {
@@ -186,8 +182,8 @@ public class GitHubSettings {
       PropertyDefinition.builder(ORGANIZATIONS)
         .name("Organizations")
         .description("Only members of these organizations will be able to authenticate to the server. " +
-          "Specify multiple organizations as a comma separated list. " +
           "If a user is a member of any of the organizations listed they will be authenticated.")
+        .multiValues(true)
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)
         .index(index++)

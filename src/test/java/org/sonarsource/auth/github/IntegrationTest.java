@@ -35,6 +35,7 @@ import org.junit.rules.ExpectedException;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
+import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
 
 import static java.lang.String.format;
@@ -190,7 +191,7 @@ public class IntegrationTest {
 
     HttpServletRequest request = newRequest("the-verifier-code");
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
-    expectedException.expect(IllegalStateException.class);
+    expectedException.expect(UnauthorizedException.class);
     expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
     underTest.callback(callbackContext);
   }
@@ -208,7 +209,7 @@ public class IntegrationTest {
 
     HttpServletRequest request = newRequest("the-verifier-code");
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
-    expectedException.expect(IllegalStateException.class);
+    expectedException.expect(UnauthorizedException.class);
     expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
     underTest.callback(callbackContext);
   }
