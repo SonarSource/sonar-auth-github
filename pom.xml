@@ -14,6 +14,7 @@
   <name>GitHub Authentication for SonarQube</name>
   <description>GitHub Authentication for SonarQube</description>
   <inceptionYear>2016</inceptionYear>
+  <url>http://redirect.sonarsource.com/plugins/authgithub.html</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
