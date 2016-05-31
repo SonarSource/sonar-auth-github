@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>31</version>
+    <version>34</version>
   </parent>
 
   <groupId>org.sonarsource.auth.github</groupId>
@@ -53,7 +53,7 @@
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <version>5.5</version>
+      <version>5.6-RC2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

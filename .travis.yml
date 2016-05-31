@@ -1,7 +1,7 @@
 language: java
 
 jdk:
-  - oraclejdk7
+  - oraclejdk8
 
 script:
   - ./travis.sh
@@ -18,4 +18,13 @@ cache:
 notifications:
   email: false
   webhooks:
-    - secure: "BVn3eE3O89c9Ljd4eRWUyFVrxN5fujkGKIbqhRxtrioECZfEeEzlwQr6YGqUrBah+T4+WYeC3nbpsrB6FVJ8P5BOZla0AFIx5uZMa/nf4jhVVYzY9UQNfpW1JWZyXgVPTV/GT7VNho+JhGJfl2NfYNe6dUvhCwWl5zM9TIavw8rgEvJnJvdKpRSdcohunkAF3s/cEfaVts25XYYWwgGg75dnWbLNDYVND6beM+QanIvF4SYfWeguzkBjsdPYMAe9t5OY/FDavkuKk4IQ888E/8SSSxJaQm4mABCefgGGVQEmWudD6doefC8aZN/b4C8B7HPnAvdDHn5tB3gZReW/1+Bg4Cu9aT2D86G+AZgzM507Dv7pO3OF45sN3urmfkUXK8siwRyU3/nblgVUcMbb5gA2FzPS76H3Di8kx10iDXSsOuVBOExf/2O41IMhZGhYBjprXh0HYK5etVTZMh7iJKz3JQl/Mad6h9NPq7uki6SzT7jh/FKjhzn6VliGN9nKhjS/sXbw6/k6n7UY0Cs+OJ1x9cDI4U9bqPMC5KrWkLHIYdseHu8wgAls3jF9GFVPVq0cw38sqMV0HvfzvAYkNEgyLYpgyn9dd1Kmo9VB2r9I4P/WKgH1OJCyi1PP3Z9QA8JPDJDQJDZeJs1UU9SiJLNreXqaKf1M6xpwcMKKMfE="
+    urls:
+      - secure: "BVn3eE3O89c9Ljd4eRWUyFVrxN5fujkGKIbqhRxtrioECZfEeEzlwQr6YGqUrBah+T4+WYeC3nbpsrB6FVJ8P5BOZla0AFIx5uZMa/nf4jhVVYzY9UQNfpW1JWZyXgVPTV/GT7VNho+JhGJfl2NfYNe6dUvhCwWl5zM9TIavw8rgEvJnJvdKpRSdcohunkAF3s/cEfaVts25XYYWwgGg75dnWbLNDYVND6beM+QanIvF4SYfWeguzkBjsdPYMAe9t5OY/FDavkuKk4IQ888E/8SSSxJaQm4mABCefgGGVQEmWudD6doefC8aZN/b4C8B7HPnAvdDHn5tB3gZReW/1+Bg4Cu9aT2D86G+AZgzM507Dv7pO3OF45sN3urmfkUXK8siwRyU3/nblgVUcMbb5gA2FzPS76H3Di8kx10iDXSsOuVBOExf/2O41IMhZGhYBjprXh0HYK5etVTZMh7iJKz3JQl/Mad6h9NPq7uki6SzT7jh/FKjhzn6VliGN9nKhjS/sXbw6/k6n7UY0Cs+OJ1x9cDI4U9bqPMC5KrWkLHIYdseHu8wgAls3jF9GFVPVq0cw38sqMV0HvfzvAYkNEgyLYpgyn9dd1Kmo9VB2r9I4P/WKgH1OJCyi1PP3Z9QA8JPDJDQJDZeJs1UU9SiJLNreXqaKf1M6xpwcMKKMfE="
+  on_start: always
+
+addons:
+  apt:
+    packages:
+      # upgrade java 8 as the default version 1.8.0_31 prevents from compile sources
+      # https://github.com/travis-ci/travis-ci/issues/4042
+      - oracle-java8-installer
