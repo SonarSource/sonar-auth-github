@@ -20,15 +20,27 @@
 package org.sonarsource.auth.github;
 
 import org.junit.Test;
+import org.sonar.api.Plugin;
+import org.sonar.api.utils.Version;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AuthGitHubPluginTest {
 
+  MockContext context = new MockContext();
+
   AuthGitHubPlugin underTest = new AuthGitHubPlugin();
 
   @Test
   public void test_extensions() throws Exception {
-    assertThat(underTest.getExtensions()).hasSize(13);
+    underTest.define(context);
+
+    assertThat(context.getExtensions()).hasSize(13);
+  }
+
+  private static class MockContext extends Plugin.Context {
+    MockContext() {
+      super(Version.create(5, 6));
+    }
   }
 }

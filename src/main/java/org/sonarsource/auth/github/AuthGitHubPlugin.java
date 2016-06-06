@@ -19,19 +19,17 @@
  */
 package org.sonarsource.auth.github;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.sonar.api.SonarPlugin;
+import org.sonar.api.Plugin;
 
-public class AuthGitHubPlugin extends SonarPlugin {
+public class AuthGitHubPlugin implements Plugin {
+
   @Override
-  public List getExtensions() {
-    List extensions = new ArrayList<>();
-    extensions.add(GitHubIdentityProvider.class);
-    extensions.add(GitHubSettings.class);
-    extensions.add(UserIdentityFactory.class);
-    extensions.add(ScribeGitHubApi.class);
-    extensions.addAll(GitHubSettings.definitions());
-    return extensions;
+  public void define(Context context) {
+    context.addExtensions(
+      GitHubIdentityProvider.class,
+      GitHubSettings.class,
+      UserIdentityFactory.class,
+      ScribeGitHubApi.class);
+    context.addExtensions(GitHubSettings.definitions());
   }
 }
