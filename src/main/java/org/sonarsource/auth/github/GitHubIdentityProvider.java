@@ -97,7 +97,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     context.redirectTo(url);
   }
 
-  public String getScope() {
+  String getScope() {
     return (settings.syncGroups() || isOrganizationMembershipRequired()) ? "user:email,read:org" : "user:email";
   }
 
@@ -137,7 +137,9 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return GsonTeams.parse(responseBody);
   }
 
-  public boolean isOrganizationMembershipRequired() { return settings.organizations().length > 0; }
+  boolean isOrganizationMembershipRequired() {
+    return settings.organizations().length > 0;
+  }
 
   private boolean isOrganizationsMember(Token accessToken, String login) {
     for (String organization : settings.organizations()) {
@@ -161,28 +163,28 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
   private boolean isOrganizationMember(Token accessToken, String organization, String login) {
-    int membership_code = java.net.HttpURLConnection.HTTP_NO_CONTENT;
-    List<Integer> unexceptional_codes = Arrays.asList(membership_code, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_NOT_FOUND);
+    int membershipCode = java.net.HttpURLConnection.HTTP_NO_CONTENT;
+    List<Integer> unexceptionalCodes = Arrays.asList(membershipCode, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_NOT_FOUND);
 
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
     OAuthService scribe = new ServiceBuilder()
-            .provider(scribeApi)
-            .apiKey(settings.clientId())
-            .apiSecret(settings.clientSecret())
-            .build();
+      .provider(scribeApi)
+      .apiKey(settings.clientId())
+      .apiSecret(settings.clientSecret())
+      .build();
     OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
     scribe.signRequest(accessToken, request);
 
     com.github.scribejava.core.model.Response response = request.send();
     int code = response.getCode();
-    if (!unexceptional_codes.contains(code)) {
+    if (!unexceptionalCodes.contains(code)) {
       throw new IllegalStateException(format("Fail to execute request '%s'. " +
         "Error code is %s, Body of the response is %s", requestUrl, code, response.getBody()));
     }
 
     LOGGER.trace("Orgs response received : {}", code);
 
-    return code == membership_code;
+    return code == membershipCode;
   }
 
   private static String executeRequest(String requestUrl, OAuthService scribe, Token accessToken) {
