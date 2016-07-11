@@ -128,6 +128,56 @@ public class IntegrationTest {
   }
 
   @Test
+  public void should_retrieve_private_primary_verified_email_address() {
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
+    // response of api.github.com/user/emails
+    github.enqueue(new MockResponse().setBody(
+      "[\n" +
+        "  {\n" +
+        "    \"email\": \"support@github.com\",\n" +
+        "    \"verified\": false,\n" +
+        "    \"primary\": false\n" +
+        "  },\n" +
+        "  {\n" +
+        "    \"email\": \"octocat@github.com\",\n" +
+        "    \"verified\": true,\n" +
+        "    \"primary\": true\n" +
+        "  },\n" +
+        "]"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    underTest.callback(callbackContext);
+
+    assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity.getLogin()).isEqualTo("octocat@github");
+    assertThat(callbackContext.userIdentity.getName()).isEqualTo("monalisa octocat");
+    assertThat(callbackContext.userIdentity.getEmail()).isEqualTo("octocat@github.com");
+    assertThat(callbackContext.redirectedToRequestedPage.get()).isTrue();
+  }
+
+  @Test
+  public void should_not_fail_if_no_email() {
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
+    // response of api.github.com/user/emails
+    github.enqueue(new MockResponse().setBody("[]"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    underTest.callback(callbackContext);
+
+    assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity.getLogin()).isEqualTo("octocat@github");
+    assertThat(callbackContext.userIdentity.getName()).isEqualTo("monalisa octocat");
+    assertThat(callbackContext.userIdentity.getEmail()).isNull();
+    assertThat(callbackContext.redirectedToRequestedPage.get()).isTrue();
+  }
+
+  @Test
   public void redirect_browser_to_github_authentication_form_with_group_sync() throws Exception {
     settings.setProperty("sonar.auth.github.groupsSync", true);
     DumbInitContext context = new DumbInitContext("the-csrf-state");

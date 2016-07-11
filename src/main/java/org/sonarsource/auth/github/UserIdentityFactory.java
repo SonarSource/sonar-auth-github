@@ -41,12 +41,12 @@ public class UserIdentityFactory {
     this.settings = settings;
   }
 
-  public UserIdentity create(GsonUser gson, @Nullable List<GsonTeams.GsonTeam> teams) {
+  public UserIdentity create(GsonUser user, @Nullable String email, @Nullable List<GsonTeams.GsonTeam> teams) {
     UserIdentity.Builder builder = UserIdentity.builder()
-      .setProviderLogin(gson.getLogin())
-      .setLogin(generateLogin(gson))
-      .setName(generateName(gson))
-      .setEmail(gson.getEmail());
+      .setProviderLogin(user.getLogin())
+      .setLogin(generateLogin(user))
+      .setName(generateName(user))
+      .setEmail(email);
     if (teams != null) {
       builder.setGroups(teams.stream()
         .map(team -> team.getOrganizationId() + "/" + team.getId())

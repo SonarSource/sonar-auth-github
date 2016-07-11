@@ -123,7 +123,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
         user.getLogin(), Arrays.stream(settings.organizations()).collect(Collectors.joining("', '"))));
     }
 
-    UserIdentity userIdentity = userIdentityFactory.create(user,
+    final String email;
+    if (user.getEmail() == null) {
+      // if the user has not specified a public email address in their profile
+      email = getEmail(scribe, accessToken);
+    } else {
+      email = user.getEmail();
+    }
+
+    UserIdentity userIdentity = userIdentityFactory.create(user, email,
       settings.syncGroups() ? getTeams(scribe, accessToken) : null);
     context.authenticate(userIdentity);
     context.redirectToRequestedPage();
@@ -133,6 +141,17 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String responseBody = executeRequest(settings.apiURL() + "user", scribe, accessToken);
     LOGGER.trace("User response received : {}", responseBody);
     return GsonUser.parse(responseBody);
+  }
+
+  private String getEmail(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
+    String responseBody = executeRequest(settings.apiURL() + "user/emails", scribe, accessToken);
+    LOGGER.trace("Emails response received : {}", responseBody);
+    List<GsonEmails.GsonEmail> emails = GsonEmails.parse(responseBody);
+    return emails.stream()
+      .filter(email -> email.isPrimary() && email.isVerified())
+      .findFirst()
+      .map(GsonEmails.GsonEmail::getEmail)
+      .orElse(null);
   }
 
   private List<GsonTeams.GsonTeam> getTeams(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
