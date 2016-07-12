@@ -110,9 +110,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     String oAuthVerifier = request.getParameter("code");
     Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
 
-    OAuthRequest userRequest = new OAuthRequest(Verb.GET, settings.apiURL() + "user", scribe);
-    scribe.signRequest(accessToken, userRequest);
-
     GsonUser user = getUser(scribe, accessToken);
     if (isUnauthorized(accessToken, user.getLogin())) {
       throw new UnauthorizedException(format("'%s' must be a member of at least one organization: '%s'",
