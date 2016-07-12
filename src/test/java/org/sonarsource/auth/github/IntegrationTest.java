@@ -111,10 +111,10 @@ public class IntegrationTest {
 
     // Verify the requests sent to GitHub
     RecordedRequest accessTokenGitHubRequest = github.takeRequest();
-    assertThat(accessTokenGitHubRequest.getMethod()).isEqualTo("GET");
-    assertThat(accessTokenGitHubRequest.getPath()).isEqualTo(
-      "/login/oauth/access_token" +
-        "?client_id=the_id" +
+    assertThat(accessTokenGitHubRequest.getMethod()).isEqualTo("POST");
+    assertThat(accessTokenGitHubRequest.getPath()).isEqualTo("/login/oauth/access_token");
+    assertThat(accessTokenGitHubRequest.getBody().readUtf8()).isEqualTo(
+        "client_id=the_id" +
         "&client_secret=the_secret" +
         "&code=the-verifier-code" +
         "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
