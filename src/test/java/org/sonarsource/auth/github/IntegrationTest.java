@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
@@ -40,6 +39,7 @@ import org.sonar.api.server.authentication.UserIdentity;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,9 +49,6 @@ public class IntegrationTest {
 
   @Rule
   public MockWebServer github = new MockWebServer();
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   // load settings with default values
   Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
@@ -191,9 +188,12 @@ public class IntegrationTest {
 
     HttpServletRequest request = newRequest("the-verifier-code");
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
-    expectedException.expect(UnauthorizedException.class);
-    expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
-    underTest.callback(callbackContext);
+    try {
+      underTest.callback(callbackContext);
+      fail("exception expected");
+    } catch (UnauthorizedException e) {
+      assertThat(e.getMessage()).isEqualTo("'octocat' must be a member of at least one organization: 'example'");
+    }
   }
 
   @Test
@@ -209,9 +209,12 @@ public class IntegrationTest {
 
     HttpServletRequest request = newRequest("the-verifier-code");
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
-    expectedException.expect(UnauthorizedException.class);
-    expectedException.expectMessage("'octocat' must be a member of at least one organization: 'example'");
-    underTest.callback(callbackContext);
+    try {
+      underTest.callback(callbackContext);
+      fail("exception expected");
+    } catch (UnauthorizedException e) {
+      assertThat(e.getMessage()).isEqualTo("'octocat' must be a member of at least one organization: 'example'");
+    }
   }
 
   @Test
@@ -221,10 +224,12 @@ public class IntegrationTest {
     github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
 
     DumbCallbackContext callbackContext = new DumbCallbackContext(newRequest("the-verifier-code"));
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("Fail to execute request");
-    expectedException.expectMessage("HTTP code: 500, response: {error}");
-    underTest.callback(callbackContext);
+    try {
+      underTest.callback(callbackContext);
+      fail("exception expected");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).isEqualTo("Fail to execute request '" + gitHubSettings.apiURL() + "user'. HTTP code: 500, response: {error}");
+    }
 
     assertThat(callbackContext.csrfStateVerified.get()).isTrue();
     assertThat(callbackContext.userIdentity).isNull();
