@@ -313,6 +313,26 @@ public class IntegrationTest {
     assertThat(callbackContext.redirectedToRequestedPage.get()).isFalse();
   }
 
+  @Test
+  public void callback_throws_ISE_if_error_when_checking_membership() {
+    settings.setProperty("sonar.auth.github.organizations", "example");
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // crash of api.github.com/orgs/example/members/user
+    github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    try {
+      underTest.callback(callbackContext);
+      fail("exception expected");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).isEqualTo("Fail to execute request '" + gitHubSettings.apiURL() + "orgs/example/members/octocat'. HTTP code: 500, response: {error}");
+    }
+  }
+
   /**
    * Response sent by GitHub to SonarQube when generating an access token
    */

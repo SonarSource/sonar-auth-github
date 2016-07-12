@@ -22,6 +22,7 @@ package org.sonarsource.auth.github;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import java.io.IOException;
@@ -186,9 +187,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
   private boolean isOrganizationMember(OAuth2AccessToken accessToken, String organization, String login) throws IOException {
-    int membershipCode = java.net.HttpURLConnection.HTTP_NO_CONTENT;
-    List<Integer> unexceptionalCodes = Arrays.asList(membershipCode, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_NOT_FOUND);
-
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
     OAuth20Service scribe = new ServiceBuilder()
       .apiKey(settings.clientId())
@@ -199,14 +197,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
     com.github.scribejava.core.model.Response response = request.send();
     int code = response.getCode();
-    if (!unexceptionalCodes.contains(code)) {
-      throw new IllegalStateException(format("Fail to execute request '%s'. " +
-        "Error code is %s, Body of the response is %s", requestUrl, code, response.getBody()));
+    switch (code) {
+      case HttpURLConnection.HTTP_MOVED_TEMP:
+      case HttpURLConnection.HTTP_NOT_FOUND:
+      case HttpURLConnection.HTTP_NO_CONTENT:
+        LOGGER.trace("Orgs response received : {}", code);
+        return code == HttpURLConnection.HTTP_NO_CONTENT;
+      default:
+        throw unexpectedResponseCode(requestUrl, response);
     }
-
-    LOGGER.trace("Orgs response received : {}", code);
-
-    return code == membershipCode;
   }
 
   private static String executeRequest(String requestUrl, OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
@@ -215,10 +214,13 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
     com.github.scribejava.core.model.Response response = request.send();
     if (!response.isSuccessful()) {
-      throw new IllegalStateException(format("Fail to execute request '%s'. HTTP code: %s, response: %s",
-        requestUrl, response.getCode(), response.getBody()));
+      throw unexpectedResponseCode(requestUrl, response);
     }
     return response.getBody();
+  }
+
+  private static IllegalStateException unexpectedResponseCode(String requestUrl, Response response) throws IOException {
+    return new IllegalStateException(format("Fail to execute request '%s'. HTTP code: %s, response: %s", requestUrl, response.getCode(), response.getBody()));
   }
 
   private ServiceBuilder newScribeBuilder(OAuth2IdentityProvider.OAuth2Context context) {

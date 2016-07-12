@@ -63,6 +63,14 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
+  public void should_allow_users_to_signup() {
+    assertThat(underTest.allowsUsersToSignUp()).as("default").isFalse();
+
+    settings.setProperty("sonar.auth.github.allowUsersToSignUp", true);
+    assertThat(underTest.allowsUsersToSignUp()).isTrue();
+  }
+
+  @Test
   public void init() throws Exception {
     setSettings(true);
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
