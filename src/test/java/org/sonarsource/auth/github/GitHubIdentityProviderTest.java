@@ -72,7 +72,10 @@ public class GitHubIdentityProviderTest {
 
     underTest.init(context);
 
-    verify(context).redirectTo("https://github.com/login/oauth/authorize?client_id=id&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail&state=state");
+    verify(context).redirectTo("https://github.com/login/oauth/authorize" +
+      "?client_id=id" +
+      "&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail" +
+      "&state=state");
   }
 
   @Test
@@ -86,7 +89,10 @@ public class GitHubIdentityProviderTest {
 
     underTest.init(context);
 
-    verify(context).redirectTo("https://github.com/login/oauth/authorize?client_id=id&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail%2Cread%3Aorg&state=state");
+    verify(context).redirectTo("https://github.com/login/oauth/authorize" +
+      "?client_id=id" +
+      "&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail%2Cread%3Aorg" +
+      "&state=state");
   }
 
   @Test
@@ -100,7 +106,11 @@ public class GitHubIdentityProviderTest {
 
     underTest.init(context);
 
-    verify(context).redirectTo("https://github.com/login/oauth/authorize?client_id=id&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=user%3Aemail%2Cread%3Aorg&state=state");
+    verify(context).redirectTo("https://github.com/login/oauth/authorize" +
+      "?client_id=id" +
+      "&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback" +
+      "&scope=user%3Aemail%2Cread%3Aorg" +
+      "&state=state");
   }
 
   @Test

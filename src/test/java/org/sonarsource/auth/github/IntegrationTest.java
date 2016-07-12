@@ -74,9 +74,14 @@ public class IntegrationTest {
   public void redirect_browser_to_github_authentication_form() throws Exception {
     DumbInitContext context = new DumbInitContext("the-csrf-state");
     underTest.init(context);
-    assertThat(context.redirectedTo)
-      .startsWith(github.url("login/oauth/authorize").toString())
-      .contains("scope=" + URLEncoder.encode("user:email", StandardCharsets.UTF_8.name()));
+
+    assertThat(context.redirectedTo).isEqualTo(
+      gitHubSettings.webURL() +
+        "login/oauth/authorize" +
+        "?client_id=the_id" +
+        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
+        "&scope=" + URLEncoder.encode("user:email", StandardCharsets.UTF_8.name()) +
+        "&state=the-csrf-state");
   }
 
   /**
@@ -105,11 +110,19 @@ public class IntegrationTest {
 
     // Verify the requests sent to GitHub
     RecordedRequest accessTokenGitHubRequest = github.takeRequest();
-    assertThat(accessTokenGitHubRequest.getPath())
-      .startsWith("/login/oauth/access_token")
-      .contains("code=the-verifier-code");
+    assertThat(accessTokenGitHubRequest.getMethod()).isEqualTo("GET");
+    assertThat(accessTokenGitHubRequest.getPath()).isEqualTo(
+      "/login/oauth/access_token" +
+        "?client_id=the_id" +
+        "&client_secret=the_secret" +
+        "&code=the-verifier-code" +
+        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()));
+
     RecordedRequest profileGitHubRequest = github.takeRequest();
-    assertThat(profileGitHubRequest.getPath()).startsWith("/user");
+    assertThat(profileGitHubRequest.getMethod()).isEqualTo("GET");
+    assertThat(profileGitHubRequest.getPath()).isEqualTo(
+      "/user" +
+        "?access_token=e72e16c7e42f292c6912e7710c838347ae178b4a");
   }
 
   @Test
@@ -117,9 +130,13 @@ public class IntegrationTest {
     settings.setProperty("sonar.auth.github.groupsSync", true);
     DumbInitContext context = new DumbInitContext("the-csrf-state");
     underTest.init(context);
-    assertThat(context.redirectedTo)
-      .startsWith(github.url("login/oauth/authorize").toString())
-      .contains("scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()));
+    assertThat(context.redirectedTo).isEqualTo(
+      gitHubSettings.webURL() +
+        "login/oauth/authorize" +
+        "?client_id=the_id" +
+        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
+        "&scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()) +
+        "&state=the-csrf-state");
   }
 
   @Test
@@ -151,9 +168,13 @@ public class IntegrationTest {
     settings.setProperty("sonar.auth.github.organizations", "example0, example1");
     DumbInitContext context = new DumbInitContext("the-csrf-state");
     underTest.init(context);
-    assertThat(context.redirectedTo)
-            .startsWith(github.url("login/oauth/authorize").toString())
-            .contains("scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()));
+    assertThat(context.redirectedTo).isEqualTo(
+      gitHubSettings.webURL() +
+        "login/oauth/authorize" +
+        "?client_id=the_id" +
+        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
+        "&scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()) +
+        "&state=the-csrf-state");
   }
 
   @Test
