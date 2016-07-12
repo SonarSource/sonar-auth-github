@@ -78,7 +78,8 @@ public class IntegrationTest {
     assertThat(context.redirectedTo).isEqualTo(
       gitHubSettings.webURL() +
         "login/oauth/authorize" +
-        "?client_id=the_id" +
+        "?response_type=code" +
+        "&client_id=the_id" +
         "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
         "&scope=" + URLEncoder.encode("user:email", StandardCharsets.UTF_8.name()) +
         "&state=the-csrf-state");
@@ -116,7 +117,8 @@ public class IntegrationTest {
         "?client_id=the_id" +
         "&client_secret=the_secret" +
         "&code=the-verifier-code" +
-        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()));
+        "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
+        "&grant_type=authorization_code");
 
     RecordedRequest profileGitHubRequest = github.takeRequest();
     assertThat(profileGitHubRequest.getMethod()).isEqualTo("GET");
@@ -133,7 +135,8 @@ public class IntegrationTest {
     assertThat(context.redirectedTo).isEqualTo(
       gitHubSettings.webURL() +
         "login/oauth/authorize" +
-        "?client_id=the_id" +
+        "?response_type=code" +
+        "&client_id=the_id" +
         "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
         "&scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()) +
         "&state=the-csrf-state");
@@ -171,7 +174,8 @@ public class IntegrationTest {
     assertThat(context.redirectedTo).isEqualTo(
       gitHubSettings.webURL() +
         "login/oauth/authorize" +
-        "?client_id=the_id" +
+        "?response_type=code" +
+        "&client_id=the_id" +
         "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
         "&scope=" + URLEncoder.encode("user:email,read:org", StandardCharsets.UTF_8.name()) +
         "&state=the-csrf-state");

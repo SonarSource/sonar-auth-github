@@ -20,11 +20,11 @@
 package org.sonarsource.auth.github;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
-import com.github.scribejava.core.model.Verifier;
-import com.github.scribejava.core.oauth.OAuthService;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +45,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
   public static final String KEY = "github";
   private static final Logger LOGGER = Loggers.get(GitHubIdentityProvider.class);
-  private static final Token EMPTY_TOKEN = null;
 
   private final GitHubSettings settings;
   private final UserIdentityFactory userIdentityFactory;
@@ -89,11 +88,11 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   @Override
   public void init(InitContext context) {
     String state = context.generateCsrfState();
-    OAuthService scribe = newScribeBuilder(context)
+    OAuth20Service scribe = newScribeBuilder(context)
       .scope(getScope())
       .state(state)
-      .build();
-    String url = scribe.getAuthorizationUrl(EMPTY_TOKEN);
+      .build(scribeApi);
+    String url = scribe.getAuthorizationUrl(/* additionalParams */ null);
     context.redirectTo(url);
   }
 
@@ -103,12 +102,20 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
   @Override
   public void callback(CallbackContext context) {
+    try {
+      onCallback(context);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public void onCallback(CallbackContext context) throws IOException {
     context.verifyCsrfState();
 
     HttpServletRequest request = context.getRequest();
-    OAuthService scribe = newScribeBuilder(context).build();
-    String oAuthVerifier = request.getParameter("code");
-    Token accessToken = scribe.getAccessToken(EMPTY_TOKEN, new Verifier(oAuthVerifier));
+    OAuth20Service scribe = newScribeBuilder(context).build(scribeApi);
+    String code = request.getParameter("code");
+    OAuth2AccessToken accessToken = scribe.getAccessToken(code);
 
     GsonUser user = getUser(scribe, accessToken);
     if (isUnauthorized(accessToken, user.getLogin())) {
@@ -122,13 +129,13 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     context.redirectToRequestedPage();
   }
 
-  private GsonUser getUser(OAuthService scribe, Token accessToken) {
+  private GsonUser getUser(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
     String responseBody = executeRequest(settings.apiURL() + "user", scribe, accessToken);
     LOGGER.trace("User response received : {}", responseBody);
     return GsonUser.parse(responseBody);
   }
 
-  private List<GsonTeams.GsonTeam> getTeams(OAuthService scribe, Token accessToken) {
+  private List<GsonTeams.GsonTeam> getTeams(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
     String responseBody = executeRequest(settings.apiURL() + "user/teams", scribe, accessToken);
     LOGGER.trace("Teams response received : {}", responseBody);
     return GsonTeams.parse(responseBody);
@@ -138,7 +145,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return settings.organizations().length > 0;
   }
 
-  private boolean isOrganizationsMember(Token accessToken, String login) {
+  private boolean isOrganizationsMember(OAuth2AccessToken accessToken, String login) throws IOException {
     for (String organization : settings.organizations()) {
       if (isOrganizationMember(accessToken, organization, login)) {
         return true;
@@ -147,7 +154,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return false;
   }
 
-  private boolean isUnauthorized(Token accessToken, String login) {
+  private boolean isUnauthorized(OAuth2AccessToken accessToken, String login) throws IOException {
     return isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, login);
   }
 
@@ -159,16 +166,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    *
    * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
-  private boolean isOrganizationMember(Token accessToken, String organization, String login) {
+  private boolean isOrganizationMember(OAuth2AccessToken accessToken, String organization, String login) throws IOException {
     int membershipCode = java.net.HttpURLConnection.HTTP_NO_CONTENT;
     List<Integer> unexceptionalCodes = Arrays.asList(membershipCode, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_NOT_FOUND);
 
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
-    OAuthService scribe = new ServiceBuilder()
-      .provider(scribeApi)
+    OAuth20Service scribe = new ServiceBuilder()
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
-      .build();
+      .build(scribeApi);
     OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
     scribe.signRequest(accessToken, request);
 
@@ -184,7 +190,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return code == membershipCode;
   }
 
-  private static String executeRequest(String requestUrl, OAuthService scribe, Token accessToken) {
+  private static String executeRequest(String requestUrl, OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
     OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
     scribe.signRequest(accessToken, request);
 
@@ -201,7 +207,6 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       throw new IllegalStateException("GitHub authentication is disabled");
     }
     return new ServiceBuilder()
-      .provider(scribeApi)
       .apiKey(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());

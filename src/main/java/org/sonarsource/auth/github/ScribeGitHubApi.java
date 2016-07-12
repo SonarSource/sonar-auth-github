@@ -20,11 +20,15 @@
 package org.sonarsource.auth.github;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.OAuth2AccessTokenExtractor;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthConfig;
+import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.utils.Preconditions;
 import org.sonar.api.server.ServerSide;
 
-import static com.github.scribejava.core.utils.OAuthEncoder.encode;
+import java.util.Map;
 
 @ServerSide
 public class ScribeGitHubApi extends DefaultApi20 {
@@ -35,20 +39,32 @@ public class ScribeGitHubApi extends DefaultApi20 {
   }
 
   @Override
+  public Verb getAccessTokenVerb() {
+    return Verb.GET;
+  }
+
+  @Override
   public String getAccessTokenEndpoint() {
     return settings.webURL() + "login/oauth/access_token";
   }
 
   @Override
-  public String getAuthorizationUrl(OAuthConfig config) {
-    // originally from https://github.com/scribejava/scribejava
-    Preconditions.checkValidUrl(config.getCallback(), "Must provide a valid url as callback. GitHub does not support OOB");
-    StringBuilder sb = new StringBuilder(settings.webURL())
-      .append("login/oauth/authorize?client_id=").append(config.getApiKey())
-      .append("&redirect_uri=").append(encode(config.getCallback()))
-      .append("&scope=").append(encode(config.getScope()));
-    String state = config.getState();
-    sb.append("&state=").append(encode(state));
-    return sb.toString();
+  protected String getAuthorizationBaseUrl() {
+    return settings.webURL() + "login/oauth/authorize";
   }
+
+  @Override
+  public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
+    return OAuth2AccessTokenExtractor.instance();
+  }
+
+  @Override
+  public String getAuthorizationUrl(OAuthConfig config, Map<String, String> additionalParams) {
+    Preconditions.checkValidUrl(config.getCallback(), "Invalid URL for callback.");
+    Preconditions.checkNotNull(config.getApiKey(), "ApiKey should not be null.");
+    Preconditions.checkNotNull(config.getScope(), "Scope should not be null.");
+    Preconditions.checkNotNull(config.getState(), "State should not be null.");
+    return super.getAuthorizationUrl(config, additionalParams);
+  }
+
 }
