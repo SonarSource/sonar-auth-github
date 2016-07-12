@@ -25,10 +25,10 @@ import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.model.Verifier;
 import com.github.scribejava.core.oauth.OAuthService;
-import com.google.common.base.Joiner;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.Display;
@@ -113,7 +113,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     GsonUser user = getUser(scribe, accessToken);
     if (isUnauthorized(accessToken, user.getLogin())) {
       throw new UnauthorizedException(format("'%s' must be a member of at least one organization: '%s'",
-        user.getLogin(), Joiner.on(", ").join(settings.organizations())));
+        user.getLogin(), Arrays.stream(settings.organizations()).collect(Collectors.joining("', '"))));
     }
 
     UserIdentity userIdentity = userIdentityFactory.create(user,

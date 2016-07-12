@@ -177,13 +177,15 @@ public class IntegrationTest {
 
   @Test
   public void callback_on_successful_authentication_with_organizations_without_membership() throws IOException, InterruptedException {
-    settings.setProperty("sonar.auth.github.organizations", "example");
+    settings.setProperty("sonar.auth.github.organizations", "first_org,second_org");
     settings.setProperty("sonar.auth.github.loginStrategy", GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
     github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
-    // response of api.github.com/orgs/example0/members/user
+    // response of api.github.com/orgs/first_org/members/user
+    github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
+    // response of api.github.com/orgs/second_org/members/user
     github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
 
     HttpServletRequest request = newRequest("the-verifier-code");
@@ -192,7 +194,7 @@ public class IntegrationTest {
       underTest.callback(callbackContext);
       fail("exception expected");
     } catch (UnauthorizedException e) {
-      assertThat(e.getMessage()).isEqualTo("'octocat' must be a member of at least one organization: 'example'");
+      assertThat(e.getMessage()).isEqualTo("'octocat' must be a member of at least one organization: 'first_org', 'second_org'");
     }
   }
 

@@ -27,7 +27,6 @@ import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.config.Settings;
 import org.sonar.api.server.ServerSide;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static org.sonar.api.PropertyType.BOOLEAN;
@@ -61,18 +60,16 @@ public class GitHubSettings {
     this.settings = settings;
   }
 
-  @CheckForNull
   public String clientId() {
-    return settings.getString(CLIENT_ID);
+    return emptyIfNull(settings.getString(CLIENT_ID));
   }
 
-  @CheckForNull
   public String clientSecret() {
-    return settings.getString(CLIENT_SECRET);
+    return emptyIfNull(settings.getString(CLIENT_SECRET));
   }
 
   public boolean isEnabled() {
-    return settings.getBoolean(ENABLED) && !isNullOrEmpty(clientId()) && !isNullOrEmpty(clientSecret());
+    return settings.getBoolean(ENABLED) && !clientId().isEmpty() && !clientSecret().isEmpty();
   }
 
   public boolean allowUsersToSignUp() {
@@ -80,17 +77,19 @@ public class GitHubSettings {
   }
 
   public String loginStrategy() {
-    return settings.getString(LOGIN_STRATEGY);
+    return emptyIfNull(settings.getString(LOGIN_STRATEGY));
   }
 
   public boolean syncGroups() {
     return settings.getBoolean(GROUPS_SYNC);
   }
 
+  @CheckForNull
   public String webURL() {
     return urlWithEndingSlash(settings.getString(WEB_URL));
   }
 
+  @CheckForNull
   public String apiURL() {
     return urlWithEndingSlash(settings.getString(API_URL));
   }
@@ -99,11 +98,16 @@ public class GitHubSettings {
     return settings.getStringArray(ORGANIZATIONS);
   }
 
+  @CheckForNull
   private static String urlWithEndingSlash(@Nullable String url) {
     if (url != null && !url.endsWith("/")) {
       return url + "/";
     }
     return url;
+  }
+
+  private static String emptyIfNull(@Nullable  String s) {
+    return s == null ? "" : s;
   }
 
   public static List<PropertyDefinition> definitions() {

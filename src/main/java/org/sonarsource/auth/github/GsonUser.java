@@ -43,6 +43,7 @@ public class GsonUser {
     this.email = email;
   }
 
+  @CheckForNull
   public String getLogin() {
     return login;
   }

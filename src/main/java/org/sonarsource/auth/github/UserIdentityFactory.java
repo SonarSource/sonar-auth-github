@@ -19,15 +19,12 @@
  */
 package org.sonarsource.auth.github;
 
-import com.google.common.base.Function;
 import java.util.List;
-import javax.annotation.Nonnull;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.authentication.UserIdentity;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.FluentIterable.from;
 import static java.lang.String.format;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
@@ -51,7 +48,9 @@ public class UserIdentityFactory {
       .setName(generateName(gson))
       .setEmail(gson.getEmail());
     if (teams != null) {
-      builder.setGroups(from(teams).transform(TeamToGroup.INSTANCE).toSet());
+      builder.setGroups(teams.stream()
+        .map(team -> team.getOrganizationId() + "/" + team.getId())
+        .collect(Collectors.toSet()));
     }
     return builder.build();
   }
@@ -69,19 +68,11 @@ public class UserIdentityFactory {
 
   private static String generateName(GsonUser gson) {
     String name = gson.getName();
-    return isNullOrEmpty(name) ? gson.getLogin() : name;
+    return name == null || name.isEmpty() ? gson.getLogin() : name;
   }
 
   private static String generateUniqueLogin(GsonUser gsonUser) {
     return format("%s@%s", gsonUser.getLogin(), GitHubIdentityProvider.KEY);
   }
 
-  private enum TeamToGroup implements Function<GsonTeams.GsonTeam, String> {
-    INSTANCE;
-
-    @Override
-    public String apply(@Nonnull GsonTeams.GsonTeam gsonTeam) {
-      return gsonTeam.getOrganizationId() + "/" + gsonTeam.getId();
-    }
-  }
 }
