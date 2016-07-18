@@ -65,4 +65,10 @@ public class GsonTeamsTest {
     assertThat(underTest).hasSize(2);
   }
 
+  @Test
+  public void should_have_no_arg_constructor() {
+    new GsonTeams.GsonTeam();
+    new GsonTeams.GsonOrganization();
+  }
+
 }

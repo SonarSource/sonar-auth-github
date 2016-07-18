@@ -45,6 +45,11 @@ public class GsonTeams {
     private String slug;
     private GsonOrganization organization;
 
+    public GsonTeam() {
+      // http://stackoverflow.com/a/18645370/229031
+      this("", new GsonOrganization());
+    }
+
     public GsonTeam(String slug, GsonOrganization organization) {
       this.slug = slug;
       this.organization = organization;
@@ -61,6 +66,11 @@ public class GsonTeams {
 
   public static class GsonOrganization {
     private String login;
+
+    public GsonOrganization() {
+      // http://stackoverflow.com/a/18645370/229031
+      this("");
+    }
 
     public GsonOrganization(String login) {
       this.login = login;

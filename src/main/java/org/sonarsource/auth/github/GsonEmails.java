@@ -47,6 +47,11 @@ public class GsonEmails {
     private boolean verified;
     private boolean primary;
 
+    public GsonEmail() {
+      // http://stackoverflow.com/a/18645370/229031
+      this("", false, false);
+    }
+
     public GsonEmail(String email, boolean verified, boolean primary) {
       this.email = email;
       this.verified = verified;

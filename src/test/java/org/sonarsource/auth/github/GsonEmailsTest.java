@@ -53,4 +53,9 @@ public class GsonEmailsTest {
     assertThat(underTest.get(1).isPrimary()).isFalse();
   }
 
+  @Test
+  public void should_have_no_arg_constructor() {
+    new GsonEmails.GsonEmail();
+  }
+
 }
