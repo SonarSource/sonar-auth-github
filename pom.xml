@@ -22,6 +22,8 @@
 
     <!-- used for deployment to SonarSource Artifactory -->
     <gitRepositoryName>sonar-auth-github</gitRepositoryName>
+    <!-- Release: enable publication to Bintray -->
+    <artifactsToPublish>${project.groupId}:${project.artifactId}:jar</artifactsToPublish>
   </properties>
 
   <issueManagement>
