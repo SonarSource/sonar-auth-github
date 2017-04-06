@@ -213,7 +213,8 @@ public class IntegrationTest {
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
     underTest.callback(callbackContext);
 
-    assertThat(callbackContext.userIdentity.getGroups()).containsOnly("SonarSource/developers");
+    assertThat(callbackContext.userIdentity.getGroups()).contains("SonarSource/developers");
+    assertThat(callbackContext.userIdentity.getGroups()).contains("sonar-users");
   }
 
   @Test

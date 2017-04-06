@@ -69,7 +69,8 @@ public class UserIdentityFactoryTest {
     );
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
     UserIdentity identity = underTest.create(gson, null, teams);
-    assertThat(identity.getGroups()).containsOnly("SonarSource/developers");
+      assertThat(identity.getGroups()).contains("sonar-users");
+      assertThat(identity.getGroups()).contains("SonarSource/developers");
   }
 
   @Test
