@@ -64,6 +64,7 @@ public class IntegrationTest {
     settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
     settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.defaultGroup", "sonar-users");
   }
 
   /**

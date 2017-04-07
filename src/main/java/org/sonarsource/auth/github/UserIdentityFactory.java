@@ -39,8 +39,6 @@ public class UserIdentityFactory {
 
   private final GitHubSettings settings;
 
-  private static final String DEFAULT_GROUP = "sonar-users";
-
   public UserIdentityFactory(GitHubSettings settings) {
     this.settings = settings;
   }
@@ -52,7 +50,7 @@ public class UserIdentityFactory {
       .setName(generateName(user))
       .setEmail(email);
     Set<String> groups = new HashSet<>();
-    groups.add(DEFAULT_GROUP);
+    groups.add(settings.defaultGroup());
     if (teams != null) {
         groups.addAll(
                 teams.stream()

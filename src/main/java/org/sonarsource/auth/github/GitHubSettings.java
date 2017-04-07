@@ -41,6 +41,7 @@ public class GitHubSettings {
   private static final String ENABLED = "sonar.auth.github.enabled";
   private static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
   private static final String GROUPS_SYNC = "sonar.auth.github.groupsSync";
+  private static final String DEFAULT_GROUP = "sonar.defaultGroup";
   private static final String API_URL = "sonar.auth.github.apiUrl";
   private static final String WEB_URL = "sonar.auth.github.webUrl";
 
@@ -82,6 +83,10 @@ public class GitHubSettings {
 
   public boolean syncGroups() {
     return settings.getBoolean(GROUPS_SYNC);
+  }
+
+  public String defaultGroup() {
+    return emptyIfNull(settings.getString(DEFAULT_GROUP));
   }
 
   @CheckForNull
