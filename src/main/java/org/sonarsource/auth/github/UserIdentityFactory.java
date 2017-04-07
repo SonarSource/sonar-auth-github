@@ -19,7 +19,9 @@
  */
 package org.sonarsource.auth.github;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.sonar.api.server.ServerSide;
@@ -47,11 +49,15 @@ public class UserIdentityFactory {
       .setLogin(generateLogin(user))
       .setName(generateName(user))
       .setEmail(email);
+    Set<String> groups = new HashSet<>();
+    groups.add(settings.defaultGroup());
     if (teams != null) {
-      builder.setGroups(teams.stream()
-        .map(team -> team.getOrganizationId() + "/" + team.getId())
-        .collect(Collectors.toSet()));
+        groups.addAll(
+                teams.stream()
+                    .map(team -> team.getOrganizationId() + "/" + team.getId())
+                    .collect(Collectors.toSet()));
     }
+    builder.setGroups(groups);
     return builder.build();
   }
 

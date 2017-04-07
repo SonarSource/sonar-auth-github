@@ -21,6 +21,8 @@ package org.sonarsource.auth.github;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,6 +39,11 @@ public class UserIdentityFactoryTest {
 
   Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
   UserIdentityFactory underTest = new UserIdentityFactory(new GitHubSettings(settings));
+
+  @Before
+  public void setUp() {
+      settings.setProperty("sonar.defaultGroup", "sonar-users");
+  }
 
   /**
    * Keep the same login as at GitHub
@@ -69,8 +76,22 @@ public class UserIdentityFactoryTest {
     );
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
     UserIdentity identity = underTest.create(gson, null, teams);
-    assertThat(identity.getGroups()).containsOnly("SonarSource/developers");
+      assertThat(identity.getGroups()).contains("sonar-users");
+      assertThat(identity.getGroups()).contains("SonarSource/developers");
   }
+
+    @Test
+    public void create_for_provider_strategy_with_teams_and_modified_sonar_default_group() {
+        GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
+        List<GsonTeams.GsonTeam> teams = Arrays.asList(
+                new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource"))
+        );
+        settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+        settings.setProperty("sonar.defaultGroup", "my-custom-group");
+        UserIdentity identity = underTest.create(gson, null, teams);
+        assertThat(identity.getGroups()).contains("my-custom-group");
+        assertThat(identity.getGroups()).contains("SonarSource/developers");
+    }
 
   @Test
   public void create_for_unique_login_strategy() {

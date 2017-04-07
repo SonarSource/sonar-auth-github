@@ -64,6 +64,7 @@ public class IntegrationTest {
     settings.setProperty("sonar.auth.github.enabled", true);
     settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
     settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.defaultGroup", "sonar-users");
   }
 
   /**
@@ -213,7 +214,8 @@ public class IntegrationTest {
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
     underTest.callback(callbackContext);
 
-    assertThat(callbackContext.userIdentity.getGroups()).containsOnly("SonarSource/developers");
+    assertThat(callbackContext.userIdentity.getGroups()).contains("SonarSource/developers");
+    assertThat(callbackContext.userIdentity.getGroups()).contains("sonar-users");
   }
 
   @Test
