@@ -25,10 +25,10 @@ import com.github.scribejava.core.extractors.TokenExtractor;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthConfig;
 import com.github.scribejava.core.model.Verb;
-import com.github.scribejava.core.utils.Preconditions;
+import java.util.Map;
 import org.sonar.api.server.ServerSide;
 
-import java.util.Map;
+import static java.util.Objects.requireNonNull;
 
 @ServerSide
 public class ScribeGitHubApi extends DefaultApi20 {
@@ -60,10 +60,10 @@ public class ScribeGitHubApi extends DefaultApi20 {
 
   @Override
   public String getAuthorizationUrl(OAuthConfig config, Map<String, String> additionalParams) {
-    Preconditions.checkValidUrl(config.getCallback(), "Invalid URL for callback.");
-    Preconditions.checkNotNull(config.getApiKey(), "ApiKey should not be null.");
-    Preconditions.checkNotNull(config.getScope(), "Scope should not be null.");
-    Preconditions.checkNotNull(config.getState(), "State should not be null.");
+    requireNonNull(config.getCallback(), "URL for callback should not be null.");
+    requireNonNull(config.getApiKey(), "ApiKey should not be null.");
+    requireNonNull(config.getScope(), "Scope should not be null.");
+    requireNonNull(config.getState(), "State should not be null.");
     return super.getAuthorizationUrl(config, additionalParams);
   }
 

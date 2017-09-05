@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.sonar.api.server.ServerSide;
@@ -93,7 +94,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       .scope(getScope())
       .state(state)
       .build(scribeApi);
-    String url = scribe.getAuthorizationUrl(/* additionalParams */ null);
+    String url = scribe.getAuthorizationUrl(/* additionalParams */ );
     context.redirectTo(url);
   }
 
@@ -105,12 +106,12 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   public void callback(CallbackContext context) {
     try {
       onCallback(context);
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException | ExecutionException e) {
       throw new IllegalStateException(e);
     }
   }
 
-  public void onCallback(CallbackContext context) throws IOException {
+  private void onCallback(CallbackContext context) throws InterruptedException, ExecutionException, IOException {
     context.verifyCsrfState();
 
     HttpServletRequest request = context.getRequest();
@@ -138,13 +139,13 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     context.redirectToRequestedPage();
   }
 
-  private GsonUser getUser(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
+  private GsonUser getUser(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException, ExecutionException, InterruptedException {
     String responseBody = executeRequest(settings.apiURL() + "user", scribe, accessToken);
     LOGGER.trace("User response received : {}", responseBody);
     return GsonUser.parse(responseBody);
   }
 
-  private String getEmail(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
+  private String getEmail(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException, ExecutionException, InterruptedException {
     String responseBody = executeRequest(settings.apiURL() + "user/emails", scribe, accessToken);
     LOGGER.trace("Emails response received : {}", responseBody);
     List<GsonEmails.GsonEmail> emails = GsonEmails.parse(responseBody);
@@ -155,7 +156,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
       .orElse(null);
   }
 
-  private List<GsonTeams.GsonTeam> getTeams(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
+  private List<GsonTeams.GsonTeam> getTeams(OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException, ExecutionException, InterruptedException {
     String responseBody = executeRequest(settings.apiURL() + "user/teams", scribe, accessToken);
     LOGGER.trace("Teams response received : {}", responseBody);
     return GsonTeams.parse(responseBody);
@@ -165,7 +166,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return settings.organizations().length > 0;
   }
 
-  private boolean isOrganizationsMember(OAuth2AccessToken accessToken, String login) throws IOException {
+  private boolean isOrganizationsMember(OAuth2AccessToken accessToken, String login) throws IOException, ExecutionException, InterruptedException {
     for (String organization : settings.organizations()) {
       if (isOrganizationMember(accessToken, organization, login)) {
         return true;
@@ -174,7 +175,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     return false;
   }
 
-  private boolean isUnauthorized(OAuth2AccessToken accessToken, String login) throws IOException {
+  private boolean isUnauthorized(OAuth2AccessToken accessToken, String login) throws IOException, ExecutionException, InterruptedException {
     return isOrganizationMembershipRequired() && !isOrganizationsMember(accessToken, login);
   }
 
@@ -186,16 +187,15 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
    *
    * @see <a href="https://developer.github.com/v3/orgs/members/#response-if-requester-is-an-organization-member-and-user-is-a-member">GitHub members API</a>
    */
-  private boolean isOrganizationMember(OAuth2AccessToken accessToken, String organization, String login) throws IOException {
+  private boolean isOrganizationMember(OAuth2AccessToken accessToken, String organization, String login) throws IOException, ExecutionException, InterruptedException {
     String requestUrl = settings.apiURL() + format("orgs/%s/members/%s", organization, login);
-    OAuth20Service scribe = new ServiceBuilder()
-      .apiKey(settings.clientId())
+    OAuth20Service scribe = new ServiceBuilder(settings.clientId())
       .apiSecret(settings.clientSecret())
       .build(scribeApi);
-    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
+    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl);
     scribe.signRequest(accessToken, request);
 
-    com.github.scribejava.core.model.Response response = request.send();
+    Response response = scribe.execute(request);
     int code = response.getCode();
     switch (code) {
       case HttpURLConnection.HTTP_MOVED_TEMP:
@@ -208,11 +208,10 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     }
   }
 
-  private static String executeRequest(String requestUrl, OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException {
-    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl, scribe);
+  private static String executeRequest(String requestUrl, OAuth20Service scribe, OAuth2AccessToken accessToken) throws IOException, ExecutionException, InterruptedException {
+    OAuthRequest request = new OAuthRequest(Verb.GET, requestUrl);
     scribe.signRequest(accessToken, request);
-
-    com.github.scribejava.core.model.Response response = request.send();
+    Response response = scribe.execute(request);
     if (!response.isSuccessful()) {
       throw unexpectedResponseCode(requestUrl, response);
     }
@@ -227,8 +226,7 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
     if (!isEnabled()) {
       throw new IllegalStateException("GitHub authentication is disabled");
     }
-    return new ServiceBuilder()
-      .apiKey(settings.clientId())
+    return new ServiceBuilder(settings.clientId())
       .apiSecret(settings.clientSecret())
       .callback(context.getCallbackUrl());
   }
