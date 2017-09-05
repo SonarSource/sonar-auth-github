@@ -122,9 +122,7 @@ public class IntegrationTest {
 
     RecordedRequest profileGitHubRequest = github.takeRequest();
     assertThat(profileGitHubRequest.getMethod()).isEqualTo("GET");
-    assertThat(profileGitHubRequest.getPath()).isEqualTo(
-      "/user" +
-        "?access_token=e72e16c7e42f292c6912e7710c838347ae178b4a");
+    assertThat(profileGitHubRequest.getPath()).isEqualTo("/user");
   }
 
   @Test
