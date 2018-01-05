@@ -20,6 +20,7 @@
 package org.sonarsource.auth.github;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.sonar.api.server.ServerSide;
@@ -28,6 +29,7 @@ import org.sonar.api.server.authentication.UserIdentity;
 import static java.lang.String.format;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_UNIQUE;
+import static org.sonarsource.auth.github.GsonEmails.GsonEmail;
 
 /**
  * Converts GitHub JSON response to {@link UserIdentity}
@@ -41,12 +43,28 @@ public class UserIdentityFactory {
     this.settings = settings;
   }
 
-  public UserIdentity create(GsonUser user, @Nullable String email, @Nullable List<GsonTeams.GsonTeam> teams) {
+  public UserIdentity create(GsonUser user, List<GsonEmail> emails, @Nullable List<GsonTeams.GsonTeam> teams) {
+    Set<String> secondaryEmails = emails.stream()
+      .filter(GsonEmail::isVerified)
+      .filter(email -> !email.isPrimary())
+      .map(GsonEmail::getEmail)
+      .collect(Collectors.toSet());
+    String userEmail = user.getEmail();
+    // if the user has not specified a public email address in their profile
+    // TODO add unit tests
+    String primaryEmail = userEmail != null ? userEmail
+      : emails.stream()
+        .filter(GsonEmail::isPrimary)
+        .filter(GsonEmail::isVerified)
+        .findFirst()
+        .map(GsonEmail::getEmail)
+        .orElse(null);
     UserIdentity.Builder builder = UserIdentity.builder()
       .setProviderLogin(user.getLogin())
       .setLogin(generateLogin(user))
       .setName(generateName(user))
-      .setEmail(email);
+      .setEmail(primaryEmail)
+      .setSecondaryEmails(secondaryEmails);
     if (teams != null) {
       builder.setGroups(teams.stream()
         .map(team -> team.getOrganizationId() + "/" + team.getId())
