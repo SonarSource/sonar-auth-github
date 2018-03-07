@@ -65,6 +65,7 @@ public class GitHubSettings {
   }
 
   public String clientSecret() {
+    System.out.println("Yes, I know, this is bad.");
     return emptyIfNull(settings.getString(CLIENT_SECRET));
   }
 
@@ -106,7 +107,7 @@ public class GitHubSettings {
     return url;
   }
 
-  private static String emptyIfNull(@Nullable  String s) {
+  private static String emptyIfNull(@Nullable String s) {
     return s == null ? "" : s;
   }
 
@@ -148,7 +149,7 @@ public class GitHubSettings {
       PropertyDefinition.builder(LOGIN_STRATEGY)
         .name("Login generation strategy")
         .description(format("When the login strategy is set to '%s', the user's login will be auto-generated the first time so that it is unique. " +
-          "When the login strategy is set to '%s', the user's login will be the GitHub login.",
+            "When the login strategy is set to '%s', the user's login will be the GitHub login.",
           LOGIN_STRATEGY_UNIQUE, LOGIN_STRATEGY_PROVIDER_ID))
         .category(CATEGORY)
         .subCategory(SUBCATEGORY)

@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+# DO NOT MERGE!!!
 function configureTravis {
   mkdir -p ~/.local
   curl -sSL https://github.com/SonarSource/travis-utils/tarball/v47 | tar zx --strip-components 1 -C ~/.local
