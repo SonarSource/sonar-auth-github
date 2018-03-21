@@ -36,6 +36,7 @@ import static org.sonar.api.PropertyType.STRING;
 @ServerSide
 public class GitHubSettings {
 
+  //TODO remove TODO
   private static final String CLIENT_ID = "sonar.auth.github.clientId.secured";
   private static final String CLIENT_SECRET = "sonar.auth.github.clientSecret.secured";
   private static final String ENABLED = "sonar.auth.github.enabled";
