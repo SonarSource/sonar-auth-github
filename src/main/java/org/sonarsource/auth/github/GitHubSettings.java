@@ -38,6 +38,7 @@ public class GitHubSettings {
 
   //TODO remove TODO
   private static final String CLIENT_ID = "sonar.auth.github.clientId.secured";
+  //TODO Another todo, a casual one
   private static final String CLIENT_SECRET = "sonar.auth.github.clientSecret.secured";
   private static final String ENABLED = "sonar.auth.github.enabled";
   private static final String ALLOW_USERS_TO_SIGN_UP = "sonar.auth.github.allowUsersToSignUp";
