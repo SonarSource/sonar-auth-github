@@ -32,6 +32,7 @@ public class GsonUserTest {
   public void parse_json() throws Exception {
     try (InputStream json = getClass().getResourceAsStream("GsonUserTest/user.json")) {
       GsonUser user = GsonUser.parse(IOUtils.toString(json, StandardCharsets.UTF_8.name()));
+      assertThat(user.getId()).isEqualTo("1");
       assertThat(user.getLogin()).isEqualTo("octocat");
       assertThat(user.getLogin()).isEqualTo("octocat");
       assertThat(user.getName()).isEqualTo("monalisa octocat");

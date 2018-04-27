@@ -43,6 +43,7 @@ public class UserIdentityFactory {
 
   public UserIdentity create(GsonUser user, @Nullable String email, @Nullable List<GsonTeams.GsonTeam> teams) {
     UserIdentity.Builder builder = UserIdentity.builder()
+      .setProviderId(user.getId())
       .setProviderLogin(user.getLogin())
       .setLogin(generateLogin(user))
       .setName(generateName(user))
