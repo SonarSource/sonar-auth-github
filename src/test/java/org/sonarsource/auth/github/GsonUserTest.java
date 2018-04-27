@@ -33,6 +33,7 @@ public class GsonUserTest {
     try (InputStream json = getClass().getResourceAsStream("GsonUserTest/user.json")) {
       GsonUser user = GsonUser.parse(IOUtils.toString(json, StandardCharsets.UTF_8.name()));
       assertThat(user.getLogin()).isEqualTo("octocat");
+      assertThat(user.getLogin()).isEqualTo("octocat");
       assertThat(user.getName()).isEqualTo("monalisa octocat");
       assertThat(user.getEmail()).isEqualTo("octocat@github.com");
     }

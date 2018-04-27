@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.config.Settings;
+import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +37,7 @@ public class GitHubIdentityProviderTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  Settings settings = new Settings();
+  Settings settings = new MapSettings();
   GitHubSettings gitHubSettings = new GitHubSettings(settings);
   UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
   ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);

@@ -19,12 +19,10 @@
  */
 package org.sonarsource.auth.github;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.Test;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
+import org.sonar.api.config.internal.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_DEFAULT_VALUE;
@@ -32,7 +30,7 @@ import static org.sonarsource.auth.github.GitHubSettings.LOGIN_STRATEGY_PROVIDER
 
 public class GitHubSettingsTest {
 
-  Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
+  Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
 
   GitHubSettings underTest = new GitHubSettings(settings);
 
