@@ -37,14 +37,14 @@ public class GitHubIdentityProviderTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  Settings settings = new MapSettings();
-  GitHubSettings gitHubSettings = new GitHubSettings(settings);
-  UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
-  ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
+  private Settings settings = new MapSettings();
+  private GitHubSettings gitHubSettings = new GitHubSettings(settings);
+  private UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
+  private ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
+  private GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
 
   @Test
-  public void check_fields() throws Exception {
+  public void check_fields() {
     assertThat(underTest.getKey()).isEqualTo("github");
     assertThat(underTest.getName()).isEqualTo("GitHub");
     assertThat(underTest.getDisplay().getIconPath()).isEqualTo("/static/authgithub/github.svg");
@@ -52,7 +52,7 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
-  public void is_enabled() throws Exception {
+  public void is_enabled() {
     settings.setProperty("sonar.auth.github.clientId.secured", "id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", "secret");
     settings.setProperty("sonar.auth.github.loginStrategy", LOGIN_STRATEGY_DEFAULT_VALUE);
@@ -72,7 +72,7 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
-  public void init() throws Exception {
+  public void init() {
     setSettings(true);
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
     when(context.generateCsrfState()).thenReturn("state");
@@ -89,7 +89,7 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
-  public void init_when_group_sync() throws Exception {
+  public void init_when_group_sync() {
     setSettings(true);
     settings.setProperty("sonar.auth.github.groupsSync", "true");
     settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
@@ -107,7 +107,7 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
-  public void init_when_organizations() throws Exception {
+  public void init_when_organizations() {
     setSettings(true);
     settings.setProperty("sonar.auth.github.organizations", "example");
     settings.setProperty("sonar.auth.github.webUrl", "https://github.com/");
@@ -126,7 +126,7 @@ public class GitHubIdentityProviderTest {
   }
 
   @Test
-  public void fail_to_init_when_disabled() throws Exception {
+  public void fail_to_init_when_disabled() {
     setSettings(false);
     OAuth2IdentityProvider.InitContext context = mock(OAuth2IdentityProvider.InitContext.class);
 

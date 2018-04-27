@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
  * Lite representation of JSON response of GET https://api.github.com/user
  */
 public class GsonUser {
+  private String id;
   private String login;
   private String name;
   private String email;
@@ -37,10 +38,15 @@ public class GsonUser {
     // http://stackoverflow.com/a/18645370/229031
   }
 
-  public GsonUser(String login, @Nullable String name, @Nullable String email) {
+  public GsonUser(String id, String login, @Nullable String name, @Nullable String email) {
+    this.id = id;
     this.login = login;
     this.name = name;
     this.email = email;
+  }
+
+  public String getId() {
+    return id;
   }
 
   @CheckForNull

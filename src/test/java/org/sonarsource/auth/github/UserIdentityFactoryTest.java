@@ -36,17 +36,18 @@ public class UserIdentityFactoryTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
-  UserIdentityFactory underTest = new UserIdentityFactory(new GitHubSettings(settings));
+  private Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
+  private UserIdentityFactory underTest = new UserIdentityFactory(new GitHubSettings(settings));
 
   /**
    * Keep the same login as at GitHub
    */
   @Test
   public void create_for_provider_strategy() {
-    GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
+    GsonUser gson = new GsonUser("ABCD", "octocat", "monalisa octocat", "octocat@github.com");
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
     UserIdentity identity = underTest.create(gson, gson.getEmail(), null);
+    assertThat(identity.getProviderId()).isEqualTo("ABCD");
     assertThat(identity.getLogin()).isEqualTo("octocat");
     assertThat(identity.getName()).isEqualTo("monalisa octocat");
     assertThat(identity.getEmail()).isEqualTo("octocat@github.com");
@@ -54,7 +55,7 @@ public class UserIdentityFactoryTest {
 
   @Test
   public void no_email() {
-    GsonUser gson = new GsonUser("octocat", "monalisa octocat", null);
+    GsonUser gson = new GsonUser("ABCD","octocat", "monalisa octocat", null);
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
     UserIdentity identity = underTest.create(gson, null, null);
     assertThat(identity.getLogin()).isEqualTo("octocat");
@@ -64,7 +65,7 @@ public class UserIdentityFactoryTest {
 
   @Test
   public void create_for_provider_strategy_with_teams() {
-    GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
+    GsonUser gson = new GsonUser("ABCD","octocat", "monalisa octocat", "octocat@github.com");
     List<GsonTeams.GsonTeam> teams = Arrays.asList(
       new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource")));
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
@@ -74,7 +75,7 @@ public class UserIdentityFactoryTest {
 
   @Test
   public void create_for_unique_login_strategy() {
-    GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
+    GsonUser gson = new GsonUser("ABCD","octocat", "monalisa octocat", "octocat@github.com");
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_UNIQUE);
 
     UserIdentity identity = underTest.create(gson, null, null);
@@ -85,7 +86,7 @@ public class UserIdentityFactoryTest {
 
   @Test
   public void empty_name_is_replaced_by_provider_login() {
-    GsonUser gson = new GsonUser("octocat", "", "octocat@github.com");
+    GsonUser gson = new GsonUser("ABCD","octocat", "", "octocat@github.com");
 
     UserIdentity identity = underTest.create(gson, null, null);
     assertThat(identity.getName()).isEqualTo("octocat");
@@ -93,7 +94,7 @@ public class UserIdentityFactoryTest {
 
   @Test
   public void null_name_is_replaced_by_provider_login() {
-    GsonUser gson = new GsonUser("octocat", null, "octocat@github.com");
+    GsonUser gson = new GsonUser("ABCD","octocat", null, "octocat@github.com");
 
     UserIdentity identity = underTest.create(gson, null, null);
     assertThat(identity.getName()).isEqualTo("octocat");
@@ -105,6 +106,6 @@ public class UserIdentityFactoryTest {
 
     expectedException.expect(IllegalStateException.class);
     expectedException.expectMessage("Login strategy not supported : xxx");
-    underTest.create(new GsonUser("octocat", "octocat", "octocat@github.com"), null, null);
+    underTest.create(new GsonUser("ABCD","octocat", "octocat", "octocat@github.com"), null, null);
   }
 }

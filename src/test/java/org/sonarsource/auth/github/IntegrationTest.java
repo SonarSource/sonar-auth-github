@@ -98,13 +98,14 @@ public class IntegrationTest {
   public void callback_on_successful_authentication() throws IOException, InterruptedException {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
 
     HttpServletRequest request = newRequest("the-verifier-code");
     DumbCallbackContext callbackContext = new DumbCallbackContext(request);
     underTest.callback(callbackContext);
 
     assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity.getProviderId()).isEqualTo("ABCD");
     assertThat(callbackContext.userIdentity.getLogin()).isEqualTo("octocat@github");
     assertThat(callbackContext.userIdentity.getName()).isEqualTo("monalisa octocat");
     assertThat(callbackContext.userIdentity.getEmail()).isEqualTo("octocat@github.com");
@@ -130,7 +131,7 @@ public class IntegrationTest {
   public void should_retrieve_private_primary_verified_email_address() {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
     // response of api.github.com/user/emails
     github.enqueue(new MockResponse().setBody(
       "[\n" +
@@ -151,6 +152,7 @@ public class IntegrationTest {
     underTest.callback(callbackContext);
 
     assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity.getProviderId()).isEqualTo("ABCD");
     assertThat(callbackContext.userIdentity.getLogin()).isEqualTo("octocat@github");
     assertThat(callbackContext.userIdentity.getName()).isEqualTo("monalisa octocat");
     assertThat(callbackContext.userIdentity.getEmail()).isEqualTo("octocat@github.com");
@@ -161,7 +163,7 @@ public class IntegrationTest {
   public void should_not_fail_if_no_email() {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":null}"));
     // response of api.github.com/user/emails
     github.enqueue(new MockResponse().setBody("[]"));
 
@@ -170,6 +172,7 @@ public class IntegrationTest {
     underTest.callback(callbackContext);
 
     assertThat(callbackContext.csrfStateVerified.get()).isTrue();
+    assertThat(callbackContext.userIdentity.getProviderId()).isEqualTo("ABCD");
     assertThat(callbackContext.userIdentity.getLogin()).isEqualTo("octocat@github");
     assertThat(callbackContext.userIdentity.getName()).isEqualTo("monalisa octocat");
     assertThat(callbackContext.userIdentity.getEmail()).isNull();
@@ -192,12 +195,12 @@ public class IntegrationTest {
   }
 
   @Test
-  public void callback_on_successful_authentication_with_group_sync() throws IOException, InterruptedException {
+  public void callback_on_successful_authentication_with_group_sync() {
     settings.setProperty("sonar.auth.github.groupsSync", true);
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
     // response of api.github.com/user/teams
     github.enqueue(new MockResponse().setBody("[\n" +
       "  {\n" +
@@ -231,12 +234,12 @@ public class IntegrationTest {
   }
 
   @Test
-  public void callback_on_successful_authentication_with_organizations_with_membership() throws IOException, InterruptedException {
+  public void callback_on_successful_authentication_with_organizations_with_membership() {
     settings.setProperty("sonar.auth.github.organizations", "example0, example1");
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
     // response of api.github.com/orgs/example0/members/user
     github.enqueue(new MockResponse().setResponseCode(204));
 
@@ -250,13 +253,13 @@ public class IntegrationTest {
   }
 
   @Test
-  public void callback_on_successful_authentication_with_organizations_without_membership() throws IOException, InterruptedException {
+  public void callback_on_successful_authentication_with_organizations_without_membership() {
     settings.setProperty("sonar.auth.github.organizations", "first_org,second_org");
     settings.setProperty("sonar.auth.github.loginStrategy", GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
     // response of api.github.com/orgs/first_org/members/user
     github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
     // response of api.github.com/orgs/second_org/members/user
@@ -273,13 +276,13 @@ public class IntegrationTest {
   }
 
   @Test
-  public void callback_on_successful_authentication_with_organizations_without_membership_with_unique_login_strategy() throws IOException, InterruptedException {
+  public void callback_on_successful_authentication_with_organizations_without_membership_with_unique_login_strategy() {
     settings.setProperty("sonar.auth.github.organizations", "example");
     settings.setProperty("sonar.auth.github.loginStrategy", GitHubSettings.LOGIN_STRATEGY_UNIQUE);
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
     // response of api.github.com/orgs/example0/members/user
     github.enqueue(new MockResponse().setResponseCode(404).setBody("{}"));
 
@@ -294,7 +297,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void callback_throws_ISE_if_error_when_requesting_user_profile() throws IOException, InterruptedException {
+  public void callback_throws_ISE_if_error_when_requesting_user_profile() {
     github.enqueue(newSuccessfulAccessTokenResponse());
     // api.github.com/user crashes
     github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
@@ -318,7 +321,7 @@ public class IntegrationTest {
 
     github.enqueue(newSuccessfulAccessTokenResponse());
     // response of api.github.com/user
-    github.enqueue(new MockResponse().setBody("{\"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
     // crash of api.github.com/orgs/example/members/user
     github.enqueue(new MockResponse().setResponseCode(500).setBody("{error}"));
 
