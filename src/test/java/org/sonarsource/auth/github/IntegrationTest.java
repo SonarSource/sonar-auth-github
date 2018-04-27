@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
+import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
@@ -51,7 +52,7 @@ public class IntegrationTest {
   public MockWebServer github = new MockWebServer();
 
   // load settings with default values
-  Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
+  Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
   GitHubSettings gitHubSettings = new GitHubSettings(settings);
   UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
   ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);

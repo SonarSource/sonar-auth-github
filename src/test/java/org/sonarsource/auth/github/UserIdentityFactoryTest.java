@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.Settings;
+import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.authentication.UserIdentity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +36,7 @@ public class UserIdentityFactoryTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  Settings settings = new Settings(new PropertyDefinitions(GitHubSettings.definitions()));
+  Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
   UserIdentityFactory underTest = new UserIdentityFactory(new GitHubSettings(settings));
 
   /**
@@ -65,8 +66,7 @@ public class UserIdentityFactoryTest {
   public void create_for_provider_strategy_with_teams() {
     GsonUser gson = new GsonUser("octocat", "monalisa octocat", "octocat@github.com");
     List<GsonTeams.GsonTeam> teams = Arrays.asList(
-      new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource"))
-    );
+      new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource")));
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
     UserIdentity identity = underTest.create(gson, null, teams);
     assertThat(identity.getGroups()).containsOnly("SonarSource/developers");
