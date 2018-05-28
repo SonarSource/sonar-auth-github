@@ -45,7 +45,8 @@ import static java.lang.String.format;
 @ServerSide
 public class GitHubIdentityProvider implements OAuth2IdentityProvider {
 
-  public static final String KEY = "github";
+  static final String KEY = "github";
+
   private static final Logger LOGGER = Loggers.get(GitHubIdentityProvider.class);
 
   private final GitHubSettings settings;
@@ -106,7 +107,10 @@ public class GitHubIdentityProvider implements OAuth2IdentityProvider {
   public void callback(CallbackContext context) {
     try {
       onCallback(context);
-    } catch (IOException | InterruptedException | ExecutionException e) {
+    } catch (IOException | ExecutionException e) {
+      throw new IllegalStateException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
     }
   }
