@@ -49,7 +49,6 @@ public class GsonUser {
     return id;
   }
 
-  @CheckForNull
   public String getLogin() {
     return login;
   }

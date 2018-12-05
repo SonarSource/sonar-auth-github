@@ -22,7 +22,6 @@ package org.sonarsource.auth.github;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 
@@ -37,11 +36,12 @@ public class GitHubIdentityProviderTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private Settings settings = new MapSettings();
+  private MapSettings settings = new MapSettings();
   private GitHubSettings gitHubSettings = new GitHubSettings(settings);
   private UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
   private ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
-  private GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
+  private GitHubRestClient gitHubRestClient = new GitHubRestClient(gitHubSettings);
+  private GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi, gitHubRestClient);
 
   @Test
   public void check_fields() {
