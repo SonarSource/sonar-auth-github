@@ -28,6 +28,7 @@ public class AuthGitHubPlugin implements Plugin {
     context.addExtensions(
       GitHubIdentityProvider.class,
       GitHubSettings.class,
+      GitHubRestClient.class,
       UserIdentityFactory.class,
       ScribeGitHubApi.class);
     context.addExtensions(GitHubSettings.definitions());

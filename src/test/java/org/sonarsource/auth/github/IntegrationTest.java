@@ -25,6 +25,7 @@ import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +33,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.config.PropertyDefinitions;
-import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UnauthorizedException;
@@ -52,19 +52,24 @@ public class IntegrationTest {
   public MockWebServer github = new MockWebServer();
 
   // load settings with default values
-  Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
-  GitHubSettings gitHubSettings = new GitHubSettings(settings);
-  UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
-  ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
-  GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi);
+  private MapSettings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
+  private GitHubSettings gitHubSettings = new GitHubSettings(settings);
+  private UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
+  private ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
+  private GitHubRestClient gitHubRestClient = new GitHubRestClient(gitHubSettings);
+
+  private String gitHubUrl;
+
+  private GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi, gitHubRestClient);
 
   @Before
   public void enable() {
+    gitHubUrl = format("http://%s:%d", github.getHostName(), github.getPort());
     settings.setProperty("sonar.auth.github.clientId.secured", "the_id");
     settings.setProperty("sonar.auth.github.clientSecret.secured", "the_secret");
     settings.setProperty("sonar.auth.github.enabled", true);
-    settings.setProperty("sonar.auth.github.apiUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
-    settings.setProperty("sonar.auth.github.webUrl", format("http://%s:%d", github.getHostName(), github.getPort()));
+    settings.setProperty("sonar.auth.github.apiUrl", gitHubUrl);
+    settings.setProperty("sonar.auth.github.webUrl", gitHubUrl);
   }
 
   /**
@@ -116,7 +121,7 @@ public class IntegrationTest {
     assertThat(accessTokenGitHubRequest.getMethod()).isEqualTo("POST");
     assertThat(accessTokenGitHubRequest.getPath()).isEqualTo("/login/oauth/access_token");
     assertThat(accessTokenGitHubRequest.getBody().readUtf8()).isEqualTo(
-        "client_id=the_id" +
+      "client_id=the_id" +
         "&client_secret=the_secret" +
         "&code=the-verifier-code" +
         "&redirect_uri=" + URLEncoder.encode(CALLBACK_URL, StandardCharsets.UTF_8.name()) +
@@ -216,6 +221,42 @@ public class IntegrationTest {
     underTest.callback(callbackContext);
 
     assertThat(callbackContext.userIdentity.getGroups()).containsOnly("SonarSource/developers");
+  }
+
+  @Test
+  public void callback_on_successful_authentication_with_group_sync_on_many_pages() throws InterruptedException {
+    settings.setProperty("sonar.auth.github.groupsSync", true);
+
+    github.enqueue(newSuccessfulAccessTokenResponse());
+    // response of api.github.com/user
+    github.enqueue(new MockResponse().setBody("{\"id\":\"ABCD\", \"login\":\"octocat\", \"name\":\"monalisa octocat\",\"email\":\"octocat@github.com\"}"));
+    // responses of api.github.com/user/teams
+    github.enqueue(new MockResponse()
+      .setHeader("Link", "<" + gitHubUrl + "/user/teams?per_page=100&page=2>; rel=\"next\", <" + gitHubUrl + "/user/teams?per_page=100&page=2>; rel=\"last\"")
+      .setBody("[\n" +
+        "  {\n" +
+        "    \"slug\": \"developers\",\n" +
+        "    \"organization\": {\n" +
+        "      \"login\": \"SonarSource\"\n" +
+        "    }\n" +
+        "  }\n" +
+        "]"));
+    github.enqueue(new MockResponse()
+      .setHeader("Link", "<" + gitHubUrl + "/user/teams?per_page=100&page=1>; rel=\"prev\", <" + gitHubUrl + "/user/teams?per_page=100&page=1>; rel=\"first\"")
+      .setBody("[\n" +
+        "  {\n" +
+        "    \"slug\": \"sonarsource-developers\",\n" +
+        "    \"organization\": {\n" +
+        "      \"login\": \"SonarQubeCommunity\"\n" +
+        "    }\n" +
+        "  }\n" +
+        "]"));
+
+    HttpServletRequest request = newRequest("the-verifier-code");
+    DumbCallbackContext callbackContext = new DumbCallbackContext(request);
+    underTest.callback(callbackContext);
+
+    assertThat(new TreeSet<>(callbackContext.userIdentity.getGroups())).containsOnly("SonarQubeCommunity/sonarsource-developers", "SonarSource/developers");
   }
 
   @Test

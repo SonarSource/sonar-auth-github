@@ -36,7 +36,7 @@ public class AuthGitHubPluginTest {
   public void test_extensions() {
     underTest.define(context);
 
-    assertThat(context.getExtensions()).hasSize(13);
+    assertThat(context.getExtensions()).hasSize(14);
   }
 
   private static class MockContext extends Plugin.Context {
