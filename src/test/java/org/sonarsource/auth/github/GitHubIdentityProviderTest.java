@@ -38,7 +38,7 @@ public class GitHubIdentityProviderTest {
 
   private MapSettings settings = new MapSettings();
   private GitHubSettings gitHubSettings = new GitHubSettings(settings);
-  private UserIdentityFactory userIdentityFactory = mock(UserIdentityFactory.class);
+  private UserIdentityFactoryImpl userIdentityFactory = mock(UserIdentityFactoryImpl.class);
   private ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
   private GitHubRestClient gitHubRestClient = new GitHubRestClient(gitHubSettings);
   private GitHubIdentityProvider underTest = new GitHubIdentityProvider(gitHubSettings, userIdentityFactory, scribeApi, gitHubRestClient);
