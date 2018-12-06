@@ -24,20 +24,24 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.sonar.api.SonarQubeSide;
+import org.sonar.api.SonarRuntime;
 import org.sonar.api.config.PropertyDefinitions;
-import org.sonar.api.config.Settings;
 import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.internal.SonarRuntimeImpl;
 import org.sonar.api.server.authentication.UserIdentity;
+import org.sonar.api.utils.Version;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserIdentityFactoryTest {
+public class UserIdentityFactoryImplTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private Settings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
-  private UserIdentityFactory underTest = new UserIdentityFactory(new GitHubSettings(settings));
+  private MapSettings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
+  private SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.parse("7.2"), SonarQubeSide.SERVER);
+  private UserIdentityFactoryImpl underTest = new UserIdentityFactoryImpl(new GitHubSettings(settings), sonarRuntime);
 
   /**
    * Keep the same login as at GitHub
@@ -46,7 +50,9 @@ public class UserIdentityFactoryTest {
   public void create_for_provider_strategy() {
     GsonUser gson = new GsonUser("ABCD", "octocat", "monalisa octocat", "octocat@github.com");
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+
     UserIdentity identity = underTest.create(gson, gson.getEmail(), null);
+
     assertThat(identity.getProviderId()).isEqualTo("ABCD");
     assertThat(identity.getLogin()).isEqualTo("octocat");
     assertThat(identity.getName()).isEqualTo("monalisa octocat");
@@ -57,7 +63,9 @@ public class UserIdentityFactoryTest {
   public void no_email() {
     GsonUser gson = new GsonUser("ABCD","octocat", "monalisa octocat", null);
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+
     UserIdentity identity = underTest.create(gson, null, null);
+
     assertThat(identity.getLogin()).isEqualTo("octocat");
     assertThat(identity.getName()).isEqualTo("monalisa octocat");
     assertThat(identity.getEmail()).isNull();
@@ -69,7 +77,9 @@ public class UserIdentityFactoryTest {
     List<GsonTeams.GsonTeam> teams = Arrays.asList(
       new GsonTeams.GsonTeam("developers", new GsonTeams.GsonOrganization("SonarSource")));
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+
     UserIdentity identity = underTest.create(gson, null, teams);
+
     assertThat(identity.getGroups()).containsOnly("SonarSource/developers");
   }
 
@@ -79,6 +89,7 @@ public class UserIdentityFactoryTest {
     settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_UNIQUE);
 
     UserIdentity identity = underTest.create(gson, null, null);
+
     assertThat(identity.getLogin()).isEqualTo("octocat@github");
     assertThat(identity.getName()).isEqualTo("monalisa octocat");
     assertThat(identity.getEmail()).isNull();
@@ -89,6 +100,7 @@ public class UserIdentityFactoryTest {
     GsonUser gson = new GsonUser("ABCD","octocat", "", "octocat@github.com");
 
     UserIdentity identity = underTest.create(gson, null, null);
+
     assertThat(identity.getName()).isEqualTo("octocat");
   }
 
@@ -97,7 +109,23 @@ public class UserIdentityFactoryTest {
     GsonUser gson = new GsonUser("ABCD","octocat", null, "octocat@github.com");
 
     UserIdentity identity = underTest.create(gson, null, null);
+
     assertThat(identity.getName()).isEqualTo("octocat");
+  }
+
+  @Test
+  public void provider_id_is_not_set_on_sq_version_less_than_7_2() {
+    SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.parse("6.7"), SonarQubeSide.SERVER);
+    UserIdentityFactoryImpl underTest = new UserIdentityFactoryImpl(new GitHubSettings(settings), sonarRuntime);
+    GsonUser gson = new GsonUser("ABCD", "octocat", "monalisa octocat", "octocat@github.com");
+    settings.setProperty(GitHubSettings.LOGIN_STRATEGY, GitHubSettings.LOGIN_STRATEGY_PROVIDER_ID);
+
+    UserIdentity identity = underTest.create(gson, gson.getEmail(), null);
+
+    assertThat(identity.getProviderId()).isNull();
+    assertThat(identity.getLogin()).isEqualTo("octocat");
+    assertThat(identity.getName()).isEqualTo("monalisa octocat");
+    assertThat(identity.getEmail()).isEqualTo("octocat@github.com");
   }
 
   @Test
@@ -106,6 +134,7 @@ public class UserIdentityFactoryTest {
 
     expectedException.expect(IllegalStateException.class);
     expectedException.expectMessage("Login strategy not supported : xxx");
+
     underTest.create(new GsonUser("ABCD","octocat", "octocat", "octocat@github.com"), null, null);
   }
 }

@@ -32,11 +32,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.sonar.api.SonarQubeSide;
+import org.sonar.api.SonarRuntime;
 import org.sonar.api.config.PropertyDefinitions;
 import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.internal.SonarRuntimeImpl;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UnauthorizedException;
 import org.sonar.api.server.authentication.UserIdentity;
+import org.sonar.api.utils.Version;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +58,8 @@ public class IntegrationTest {
   // load settings with default values
   private MapSettings settings = new MapSettings(new PropertyDefinitions(GitHubSettings.definitions()));
   private GitHubSettings gitHubSettings = new GitHubSettings(settings);
-  private UserIdentityFactory userIdentityFactory = new UserIdentityFactory(gitHubSettings);
+  private SonarRuntime sonarRuntime = SonarRuntimeImpl.forSonarQube(Version.parse("7.2"), SonarQubeSide.SERVER);
+  private UserIdentityFactoryImpl userIdentityFactory = new UserIdentityFactoryImpl(gitHubSettings, sonarRuntime);
   private ScribeGitHubApi scribeApi = new ScribeGitHubApi(gitHubSettings);
   private GitHubRestClient gitHubRestClient = new GitHubRestClient(gitHubSettings);
 

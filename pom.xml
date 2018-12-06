@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -18,7 +19,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sonar.pluginClass>org.sonarsource.auth.github.AuthGitHubPlugin</sonar.pluginClass>
 
     <!-- used for deployment to SonarSource Artifactory -->
     <gitRepositoryName>sonar-auth-github</gitRepositoryName>
@@ -118,4 +118,17 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+        <artifactId>sonar-packaging-maven-plugin</artifactId>
+        <configuration>
+          <pluginClass>org.sonarsource.auth.github.AuthGitHubPlugin</pluginClass>
+          <sonarQubeMinVersion>6.7</sonarQubeMinVersion>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
