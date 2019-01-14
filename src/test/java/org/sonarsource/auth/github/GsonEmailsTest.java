@@ -1,6 +1,6 @@
 /*
  * GitHub Authentication for SonarQube
- * Copyright (C) 2016-2018 SonarSource SA
+ * Copyright (C) 2016-2019 SonarSource SA
  * mailto:info AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
@@ -19,9 +19,8 @@
  */
 package org.sonarsource.auth.github;
 
-import org.junit.Test;
-
 import java.util.List;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
