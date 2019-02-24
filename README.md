@@ -11,3 +11,5 @@ See [documentation](http://docs.sonarqube.org/display/PLUG/GitHub+Authentication
 Copyright 2016-2018 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
+
+This is a test
