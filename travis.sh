@@ -7,7 +7,6 @@ function configureTravis {
   source ~/.local/bin/install
 }
 configureTravis
-. installJDK8
 
 # When a pull request is open on the branch, then the job related
 # to the branch does not need to be executed and should be canceled.
