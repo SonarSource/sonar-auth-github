@@ -1,3 +1,5 @@
+**This plugin is compatible with SonarQube up to 7.9.X, and won't be compatible with the next SonarQube versions as it's now built-in SonarQube 8 and later.**
+
 # GitHub Authentication for SonarQube
 
 See [documentation](http://docs.sonarqube.org/display/PLUG/GitHub+Authentication+Plugin).
