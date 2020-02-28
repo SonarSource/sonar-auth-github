@@ -6,7 +6,7 @@ See [documentation](http://docs.sonarqube.org/display/PLUG/GitHub+Authentication
 
 ## Development
 
-[![Build Status](https://travis-ci.org/SonarSource/sonar-auth-github.svg?branch=master)](https://travis-ci.org/SonarSource/sonar-auth-github) [![Quality Gate](https://next.sonarqube.com/sonarqube/api/project_badges/measure?project=org.sonarsource.auth.github%3Asonar-auth-github-plugin&metric=alert_status)](https://next.sonarqube.com/sonarqube/dashboard?id=org.sonarsource.auth.github%3Asonar-auth-github-plugin)
+[![Build Status](https://api.cirrus-ci.com/github/SonarSource/sonar-auth-github.svg)](https://cirrus-ci.com/github/SonarSource/sonar-auth-github) [![Quality Gate](https://next.sonarqube.com/sonarqube/api/project_badges/measure?project=org.sonarsource.auth.github%3Asonar-auth-github-plugin&metric=alert_status)](https://next.sonarqube.com/sonarqube/dashboard?id=org.sonarsource.auth.github%3Asonar-auth-github-plugin)
 
 ### License
 
