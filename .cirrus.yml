@@ -1,5 +1,5 @@
 # content of service-account-credentials.json, used to access to Google Cloud Platform
-gcp_credentials: ENCRYPTED[390c2af79d20617b8728d1705b1c422187a8228ad900136422e92684909cf79a34e008cc6613ca524064528cdbeb1c0a]
+gcp_credentials: ENCRYPTED[!e5f7207bd8d02d383733bef47e18296ac32e3b7d22eb480354e8dd8fdc0004be45a8a4e72c797bd66ee94eb3340fa363!]
 
 #
 # ENV VARIABLES
@@ -31,7 +31,7 @@ env:
 # RE-USABLE CONFIGS
 #
 container_definition: &CONTAINER_DEFINITION
-  image: us.gcr.io/sonarqube-team/base:mvn-jdk-11
+  image: us.gcr.io/sonarqube-team/base:j11-m3-latest
   cluster_name: cirrus-ci-cluster
   zone: us-central1-a
   namespace: default
